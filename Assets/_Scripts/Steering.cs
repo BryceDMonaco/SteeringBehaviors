@@ -10,10 +10,13 @@ public class Steering : MonoBehaviour
         SeekWithoutSteering,
         SeekWithSteering,
         FleeWithSteering,
-        WanderWithSteering
+        WanderWithSteering,
+        PursueWithSteering,
+        EvadeWithSteering
     }
     [SerializeField] private SteeringType steerType = SteeringType.SeekWithSteering;
     [SerializeField] private Transform target;
+    [SerializeField] private Rigidbody targetRigidbody;
     [SerializeField] private Rigidbody myRigidbody;
     [SerializeField] private float slowDistance = 8f;  // When are this close or closer, start to slow down, must be >= stopDistance
     [SerializeField] private float stopDistance = 5f;  // When we are this close or closer, stop
@@ -22,6 +25,8 @@ public class Steering : MonoBehaviour
     [SerializeField] private bool drawDebugLines = true;
     [SerializeField] private float debugLineLength = 3f;
     [SerializeField] private float wanderAngleChange = 5f;
+    [SerializeField] private int pursuitPredictAheadIterationWaits = 10;
+    private int currentPredictWaits = 0;
 
     private float wanderAngle = 0f;
     
@@ -55,6 +60,27 @@ public class Steering : MonoBehaviour
                 break;
             case SteeringType.WanderWithSteering:
                 WanderWithSteering();
+                break;
+            case SteeringType.PursueWithSteering:
+                /*
+                 * If we are constantly predicting the target's position, we
+                 * are just following it. Instead, only predict its position
+                 * every pursuitPredictAheadIterationWaits iterations, which
+                 * is every (pursuitPredictAheadIterationWaits * 
+                 * Time.fixedDeltaTime) seconds
+                 */
+                if (currentPredictWaits >= pursuitPredictAheadIterationWaits)
+                {
+                    currentPredictWaits = 0;
+                    PursueWithSteering();
+                }
+                else
+                {
+                    currentPredictWaits++;
+                }
+                break;
+            case SteeringType.EvadeWithSteering:
+                EvadeWithSteering();
                 break;
             default:
                 Debug.LogError("Unhandled steering type");
@@ -247,6 +273,119 @@ public class Steering : MonoBehaviour
             // Draw the current direction vector
             Debug.DrawLine(myPos, myPos + (myRigidbody.velocity.normalized * debugLineLength), Color.green);
 
+        }
+
+        myRigidbody.velocity = velocity;
+    }
+
+    /*
+     * Pursue a target with steering. Predicts the targets position based on
+     * its current velocity and position and guesses farther ahead if it is
+     * father away from the target. If this is run every FixedUpdate(), this
+     * will just turn into a follow, be sure to run it less frequently if you
+     * want to see it predict and move to that prediction for some time before
+     * repredicting. Also uses steering to slowly influence its direction
+     * change.
+     */
+    void PursueWithSteering()
+    {
+        Vector3 myPos = transform.position;
+        Vector3 targetPos = target.position;
+        Vector3 velocity = myRigidbody.velocity;
+        Vector3 targetVelocity = targetRigidbody.velocity;
+        Vector3 steering;
+        Vector3 futureTargetPosition = targetPos;
+
+        if (Vector3.Distance(myPos, targetPos) <= stopDistance)
+        {
+            velocity = Vector3.zero;  // We are close enough, stop
+        }
+        else
+        {
+            float distanceBasedPredictAhead = Vector3.Distance(myPos, targetPos) / maxVelocity;
+            futureTargetPosition = targetPos + (targetVelocity * distanceBasedPredictAhead);
+            
+
+            Vector3 desiredVelocity = (futureTargetPosition - myPos).normalized * maxVelocity;
+
+            /*
+             * This could be combined into one line, but breaking it up makes
+             * the math easier to follow.
+             */
+            steering = desiredVelocity - velocity;
+            steering = ClampVector(steering, maxVelocity);
+            steering = steering / myRigidbody.mass;
+            velocity = ClampVector(velocity + steering, maxVelocity);
+
+            // Arrival
+            float distanceToTarget = Vector3.Distance(myPos, targetPos);
+            if (distanceToTarget < slowDistance)
+            {
+                velocity = velocity.normalized * maxVelocity * ((distanceToTarget - stopDistance) / (slowDistance - stopDistance));
+            }
+        }
+
+        if (drawDebugLines)
+        {
+            // Draw the desired direction vector
+            Debug.DrawLine(myPos, myPos + (velocity.normalized * debugLineLength), Color.magenta);
+            // Draw the current direction vector
+            Debug.DrawLine(myPos, myPos + (myRigidbody.velocity.normalized * debugLineLength), Color.green);
+            // Draw where we predict the target will be
+            Debug.DrawLine(myPos, futureTargetPosition, Color.red);
+        }
+
+        myRigidbody.velocity = velocity;
+    }
+
+    /*
+     * Evade a target with steering. Predicts the targets position based on
+     * its current velocity and position and guesses farther ahead if it is
+     * father away from the target, then tries to flee that point. If this is
+     * run every FixedUpdate(), this will just turn into a follow, be sure to
+     * run it less frequently if you want to see it predict and move to that
+     * prediction for some time before repredicting. Also uses steering to
+     * slowly influence its direction change.
+     */
+    void EvadeWithSteering()
+    {
+        Vector3 myPos = transform.position;
+        Vector3 targetPos = target.position;
+        Vector3 velocity = myRigidbody.velocity;
+        Vector3 targetVelocity = targetRigidbody.velocity;
+        Vector3 steering;
+        Vector3 futureTargetPosition = targetPos;
+
+        if (Vector3.Distance(myPos, targetPos) <= stopDistance)
+        {
+            velocity = Vector3.zero;  // We are close enough, stop
+        }
+        else
+        {
+            float distanceBasedPredictAhead = Vector3.Distance(myPos, targetPos) / maxVelocity;
+            futureTargetPosition = targetPos + (targetVelocity * distanceBasedPredictAhead);
+
+
+            Vector3 desiredVelocity = (myPos - futureTargetPosition).normalized * maxVelocity;
+
+            /*
+             * This could be combined into one line, but breaking it up makes
+             * the math easier to follow.
+             */
+            steering = desiredVelocity - velocity;
+            steering = ClampVector(steering, maxVelocity);
+            steering = steering / myRigidbody.mass;
+            velocity = ClampVector(velocity + steering, maxVelocity);
+        }
+
+        if (drawDebugLines)
+        {
+            // Draw the desired direction vector
+            Debug.DrawLine(myPos, myPos + (velocity.normalized * debugLineLength), Color.magenta);
+            // Draw the current direction vector
+            Debug.DrawLine(myPos, myPos + (myRigidbody.velocity.normalized * debugLineLength), Color.green);
+            // Draw where we predict the target will be
+            Debug.DrawLine(myPos, futureTargetPosition, Color.red);
         }
 
         myRigidbody.velocity = velocity;
