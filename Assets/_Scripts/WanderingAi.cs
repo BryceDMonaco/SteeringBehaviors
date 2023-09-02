@@ -2,6 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
+ * Creates simple wandering by assigning random positions to seek to. This was
+ * made before the wander behavior was implemented. Use wander instead, this
+ * produces jerky, sudden direction changes.
+ */
 public class WanderingAi : MonoBehaviour
 {
     [SerializeField] private Steering steering;
