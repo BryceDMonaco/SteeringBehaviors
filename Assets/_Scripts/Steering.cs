@@ -11,7 +11,7 @@ public class Steering : MonoBehaviour
         SeekWithSteering,
         FleeWithSteering
     }
-    [SerializeField] private SteeringType seekType = SteeringType.SeekWithSteering;
+    [SerializeField] private SteeringType steerType = SteeringType.SeekWithSteering;
     [SerializeField] private Transform target;
     [SerializeField] private Rigidbody myRigidbody;
     [SerializeField] private float slowDistance = 8f;  // When are this close or closer, start to slow down, must be >= stopDistance
@@ -35,7 +35,7 @@ public class Steering : MonoBehaviour
 
     void FixedUpdate()
     {
-        switch (seekType)
+        switch (steerType)
         {
             case SteeringType.SeekWithoutSteering:
                 SeekWithoutSteering();
@@ -50,6 +50,22 @@ public class Steering : MonoBehaviour
                 Debug.LogError("Unhandled steering type");
                 break;
         }
+    }
+
+    public void SetSteeringType (SteeringType type, Transform target)
+    {
+        steerType = type;
+        this.target = target;
+    }
+
+    public SteeringType GetSteeringType ()
+    {
+        return steerType;
+    }
+
+    public float GetStopDistance ()
+    {
+        return stopDistance;
     }
 
     /**
