@@ -14,6 +14,7 @@ public class Steering : MonoBehaviour
     [SerializeField] private SteeringType seekType = SteeringType.SeekWithSteering;
     [SerializeField] private Transform target;
     [SerializeField] private Rigidbody myRigidbody;
+    [SerializeField] private float slowDistance = 8f;  // When are this close or closer, start to slow down, must be >= stopDistance
     [SerializeField] private float stopDistance = 5f;  // When we are this close or closer, stop
     [SerializeField] private float maxVelocity = 5f;
     [SerializeField] private bool drawDebugLines = true;
@@ -24,6 +25,11 @@ public class Steering : MonoBehaviour
         if (myRigidbody == null)
         {
             myRigidbody = GetComponent<Rigidbody>();
+        }
+
+        if (slowDistance < stopDistance)
+        {
+            Debug.LogError("slowDistance must be greater than or equal to stop distance");
         }
     }
 
