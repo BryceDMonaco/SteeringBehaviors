@@ -156,14 +156,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8cb910b1bf204d2d907c2b51abca438, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  steerType: 1
+  steerType: 2
   target: {fileID: 1719861204}
   myRigidbody: {fileID: 394036649}
   slowDistance: 8
   stopDistance: 5
+  wanderCircleRadius: 3
   maxVelocity: 5
   drawDebugLines: 1
   debugLineLength: 3
+  wanderAngleChange: 5
 --- !u!54 &394036649
 Rigidbody:
   m_ObjectHideFlags: 0
