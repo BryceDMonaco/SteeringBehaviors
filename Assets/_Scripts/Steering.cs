@@ -9,16 +9,21 @@ public class Steering : MonoBehaviour
     {
         SeekWithoutSteering,
         SeekWithSteering,
-        FleeWithSteering
+        FleeWithSteering,
+        WanderWithSteering
     }
     [SerializeField] private SteeringType steerType = SteeringType.SeekWithSteering;
     [SerializeField] private Transform target;
     [SerializeField] private Rigidbody myRigidbody;
     [SerializeField] private float slowDistance = 8f;  // When are this close or closer, start to slow down, must be >= stopDistance
     [SerializeField] private float stopDistance = 5f;  // When we are this close or closer, stop
+    [SerializeField] private float wanderCircleRadius = 3f;
     [SerializeField] private float maxVelocity = 5f;
     [SerializeField] private bool drawDebugLines = true;
     [SerializeField] private float debugLineLength = 3f;
+    [SerializeField] private float wanderAngleChange = 5f;
+
+    private float wanderAngle = 0f;
     
     void Start()
     {
@@ -31,6 +36,8 @@ public class Steering : MonoBehaviour
         {
             Debug.LogError("slowDistance must be greater than or equal to stop distance");
         }
+
+        wanderAngle += GetNewWanderAngle();
     }
 
     void FixedUpdate()
@@ -45,6 +52,9 @@ public class Steering : MonoBehaviour
                 break;
             case SteeringType.FleeWithSteering:
                 FleeWithSteering();
+                break;
+            case SteeringType.WanderWithSteering:
+                WanderWithSteering();
                 break;
             default:
                 Debug.LogError("Unhandled steering type");
@@ -68,7 +78,7 @@ public class Steering : MonoBehaviour
         return stopDistance;
     }
 
-    /**
+    /*
      * This is the simplest form of seeking behavior. The object will always 
      * move towards its target, direction change is immediate and not gradual,
      * meaning there is no steering. Note that the object does not rotate to
@@ -105,7 +115,7 @@ public class Steering : MonoBehaviour
         myRigidbody.velocity = velocity;
     }
 
-    /**
+    /*
      * Seeking with steering behavior. When the target moves, this object will
      * gradually change its direction over time, in this implementation, a
      * higher mass for this object's rigidbody will mean it changes direction
@@ -156,7 +166,7 @@ public class Steering : MonoBehaviour
         myRigidbody.velocity = velocity;
     }
 
-    /**
+    /*
      * Fleeing with steering behavior. If the target comes within stopDistance
      * of this object, it will flee by gradually changing its direction over
      * time to go the opposite diretion of the target. In this implementation,
@@ -201,11 +211,63 @@ public class Steering : MonoBehaviour
         myRigidbody.velocity = velocity;
     }
 
+    /*
+     * Wanders randomly with steering behavior. This object has no target, 
+     * instead it moves in a direction and is influenced over time to change
+     * its direction. This gives the appearance of more realistic wandering
+     * as opposed to sudden sharp direction changes.
+     */
+    void WanderWithSteering()
+    {
+        Vector3 myPos = transform.position;
+        Vector3 velocity = myRigidbody.velocity;
+        Vector3 steering;
+
+        // Calculating the wander force
+        wanderAngle += GetNewWanderAngle();
+        Vector3 wanderCircleCenter = velocity.normalized * wanderCircleRadius;
+        Vector3 wanderDisplacement = new Vector3(0, 0, -1) * wanderCircleRadius;
+        wanderDisplacement = Quaternion.AngleAxis(wanderAngle, Vector3.up) * wanderDisplacement;
+        Vector3 wanderForce = wanderCircleCenter + wanderDisplacement;
+
+
+        /*
+         * This could be combined into one line, but breaking it up makes
+         * the math easier to follow.
+         */
+        steering = wanderForce;
+        steering = ClampVector(steering, maxVelocity);
+        steering = steering / myRigidbody.mass;
+        velocity = ClampVector(velocity + steering, maxVelocity);
+
+        if (drawDebugLines)
+        {
+            // Draw the desired direction vector
+            Debug.DrawLine(myPos, myPos + (velocity.normalized * debugLineLength), Color.magenta);
+            // Draw the current direction vector
+            Debug.DrawLine(myPos, myPos + (myRigidbody.velocity.normalized * debugLineLength), Color.green);
+
+        }
+
+        myRigidbody.velocity = velocity;
+    }
+
+    /*
+     * Clamp all values of a vector to +/- maxValue.
+     */
     Vector3 ClampVector(Vector3 vector, float maxValue)
     {
         return new Vector3(
             Mathf.Clamp(vector.x, -maxValue, maxValue),
             Mathf.Clamp(vector.y, -maxValue, maxValue),
             Mathf.Clamp(vector.z, -maxValue, maxValue));
+    }
+
+    /*
+     * Returns a randomly changed angle for wandering.
+     */
+    private float GetNewWanderAngle ()
+    {
+        return (Random.Range(0f, 1f) * wanderAngleChange) - (wanderAngleChange * 0.5f);
     }
 }
