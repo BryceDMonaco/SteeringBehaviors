@@ -5,16 +5,15 @@ using UnityEngine;
 // Implements math described in https://gamedevelopment.tutsplus.com/series/understanding-steering-behaviors--gamedev-12732
 public class Steering : MonoBehaviour
 {
-    public enum SteeringType
+    public enum SteeringBehavior
     {
-        SeekWithoutSteering,
-        SeekWithSteering,
-        FleeWithSteering,
-        WanderWithSteering,
-        PursueWithSteering,
-        EvadeWithSteering
+        Seek,
+        Flee,
+        Wander,
+        Pursue,
+        Evade
     }
-    [SerializeField] private SteeringType steerType = SteeringType.SeekWithSteering;
+    [SerializeField] private SteeringBehavior steeringBehavior = SteeringBehavior.Seek;
     [SerializeField] private Transform target;
     [SerializeField] private float slowDistance = 8f;  // When are this close or closer, start to slow down, must be >= stopDistance
     [SerializeField] private float stopDistance = 5f;  // When we are this close or closer, stop
@@ -48,18 +47,18 @@ public class Steering : MonoBehaviour
     {
         Vector3 steering = Vector3.zero;
 
-        switch (steerType)
+        switch (steeringBehavior)
         {
-            case SteeringType.SeekWithSteering:
-                steering = SeekWithSteering();
+            case SteeringBehavior.Seek:
+                steering = Seek();
                 break;
-            case SteeringType.FleeWithSteering:
-                steering = FleeWithSteering();
+            case SteeringBehavior.Flee:
+                steering = Flee();
                 break;
-            case SteeringType.WanderWithSteering:
-                steering = WanderWithSteering();
+            case SteeringBehavior.Wander:
+                steering = Wander();
                 break;
-            case SteeringType.PursueWithSteering:
+            case SteeringBehavior.Pursue:
                 /*
                  * If we are constantly predicting the target's position, we
                  * are just following it. Instead, only predict its position
@@ -70,15 +69,15 @@ public class Steering : MonoBehaviour
                 if (currentPredictWaits >= pursuitPredictAheadIterationWaits)
                 {
                     currentPredictWaits = 0;
-                    steering = PursueWithSteering();
+                    steering = Pursue();
                 }
                 else
                 {
                     currentPredictWaits++;
                 }
                 break;
-            case SteeringType.EvadeWithSteering:
-                steering = EvadeWithSteering();
+            case SteeringBehavior.Evade:
+                steering = Evade();
                 break;
             default:
                 Debug.LogError("Unhandled steering type");
@@ -88,7 +87,7 @@ public class Steering : MonoBehaviour
         Vector3 velocity = ClampVector(myRigidbody.velocity + steering, maxVelocity);
 
         // Calculate arrival for these behaviors
-        if (steerType == SteeringType.SeekWithSteering || steerType == SteeringType.PursueWithSteering)
+        if (steeringBehavior == SteeringBehavior.Seek || steeringBehavior == SteeringBehavior.Pursue)
         {
             
         }
@@ -97,10 +96,10 @@ public class Steering : MonoBehaviour
         // If the target is null, we are wandering, don't need to calc anything
         Vector3 targetPos = target == null ? Vector3.zero : target.position;
 
-        switch (steerType)
+        switch (steeringBehavior)
         {
-            case SteeringType.SeekWithSteering:
-            case SteeringType.PursueWithSteering:
+            case SteeringBehavior.Seek:
+            case SteeringBehavior.Pursue:
                 /*
                  * This will just fully stop the agent when it gets close. Fine
                  * for now, but will need to check to make sure no other
@@ -115,8 +114,8 @@ public class Steering : MonoBehaviour
                 }
 
                 break;
-            case SteeringType.FleeWithSteering:
-            case SteeringType.EvadeWithSteering:
+            case SteeringBehavior.Flee:
+            case SteeringBehavior.Evade:
                 /*
                  * This will just fully stop the agent when it gets away. Fine
                  * for now, but will need to check to make sure no other
@@ -137,15 +136,15 @@ public class Steering : MonoBehaviour
         myRigidbody.velocity = velocity;
     }
 
-    public void SetSteeringType (SteeringType type, Transform target)
+    public void SetSteeringBehavior (SteeringBehavior type, Transform target)
     {
-        steerType = type;
+        steeringBehavior = type;
         this.target = target;
     }
 
-    public SteeringType GetSteeringType ()
+    public SteeringBehavior GetSteeringBehavior ()
     {
-        return steerType;
+        return steeringBehavior;
     }
 
     public float GetStopDistance ()
@@ -197,7 +196,7 @@ public class Steering : MonoBehaviour
      * slower. Note that the object does not rotate to face its target, it just
      * changes its velocity to move towards it.
      */
-    Vector3 SeekWithSteering()
+    Vector3 Seek()
     {
         Vector3 myPos = transform.position;
         Vector3 targetPos = target.position;
@@ -232,7 +231,7 @@ public class Steering : MonoBehaviour
      * slower. Note that the object does not rotate to face its target, it just
      * changes its velocity to move towards it.
      */
-    Vector3 FleeWithSteering()
+    Vector3 Flee()
     {
         Vector3 myPos = transform.position;
         Vector3 targetPos = target.position;
@@ -264,7 +263,7 @@ public class Steering : MonoBehaviour
      * its direction. This gives the appearance of more realistic wandering
      * as opposed to sudden sharp direction changes.
      */
-    Vector3 WanderWithSteering()
+    Vector3 Wander()
     {
         Vector3 myPos = transform.position;
         Vector3 velocity = myRigidbody.velocity;
@@ -297,7 +296,7 @@ public class Steering : MonoBehaviour
      * repredicting. Also uses steering to slowly influence its direction
      * change.
      */
-    Vector3 PursueWithSteering()
+    Vector3 Pursue()
     {
         Vector3 myPos = transform.position;
         Vector3 targetPos = target.position;
@@ -338,7 +337,7 @@ public class Steering : MonoBehaviour
      * prediction for some time before repredicting. Also uses steering to
      * slowly influence its direction change.
      */
-    Vector3 EvadeWithSteering()
+    Vector3 Evade()
     {
         Vector3 myPos = transform.position;
         Vector3 targetPos = target.position;

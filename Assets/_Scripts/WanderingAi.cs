@@ -18,7 +18,7 @@ public class WanderingAi : MonoBehaviour
     {
         GetNewWanderTarget();
         
-        steering.SetSteeringType(Steering.SteeringType.SeekWithSteering, wanderTarget);
+        steering.SetSteeringBehavior(Steering.SteeringBehavior.Seek, wanderTarget);
 
         // We want the flee distance to always be slightly less than the stop distance so that this object always runs away a little bit before wandering again
         fleeDistance = steering.GetStopDistance() * .75f;
@@ -29,17 +29,17 @@ public class WanderingAi : MonoBehaviour
         Vector3 myPos = transform.position;
         Vector3 avoidTargetPos = avoidTarget.position;
 
-        if (steering.GetSteeringType() != Steering.SteeringType.FleeWithSteering && Vector3.Distance(myPos, avoidTargetPos) <= fleeDistance)
+        if (steering.GetSteeringBehavior() != Steering.SteeringBehavior.Flee && Vector3.Distance(myPos, avoidTargetPos) <= fleeDistance)
         {
             // If we are not already fleeing, and we are close enough to flee, flee
-            steering.SetSteeringType(Steering.SteeringType.FleeWithSteering, avoidTarget);
+            steering.SetSteeringBehavior(Steering.SteeringBehavior.Flee, avoidTarget);
 
             // One we are done fleeing, we will have a new wander target
             GetNewWanderTarget();
-        } else if (steering.GetSteeringType() == Steering.SteeringType.FleeWithSteering && Vector3.Distance(myPos, avoidTargetPos) > fleeDistance)
+        } else if (steering.GetSteeringBehavior() == Steering.SteeringBehavior.Flee && Vector3.Distance(myPos, avoidTargetPos) > fleeDistance)
         {
             // If we are fleeing, but we are far enough away, resume wandering
-            steering.SetSteeringType(Steering.SteeringType.SeekWithSteering, wanderTarget);
+            steering.SetSteeringBehavior(Steering.SteeringBehavior.Seek, wanderTarget);
         } else if (Vector3.Distance(myPos, wanderPosition) < newTargetDistance)
         {
             GetNewWanderTarget();
