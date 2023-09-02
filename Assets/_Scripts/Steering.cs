@@ -47,19 +47,18 @@ public class Steering : MonoBehaviour
 
     void FixedUpdate()
     {
+        Vector3 steering = Vector3.zero;
+
         switch (steerType)
         {
-            case SteeringType.SeekWithoutSteering:
-                SeekWithoutSteering();
-                break;
             case SteeringType.SeekWithSteering:
-                SeekWithSteering();
+                steering = SeekWithSteering();
                 break;
             case SteeringType.FleeWithSteering:
-                FleeWithSteering();
+                steering = FleeWithSteering();
                 break;
             case SteeringType.WanderWithSteering:
-                WanderWithSteering();
+                steering = WanderWithSteering();
                 break;
             case SteeringType.PursueWithSteering:
                 /*
@@ -72,7 +71,7 @@ public class Steering : MonoBehaviour
                 if (currentPredictWaits >= pursuitPredictAheadIterationWaits)
                 {
                     currentPredictWaits = 0;
-                    PursueWithSteering();
+                    steering = PursueWithSteering();
                 }
                 else
                 {
@@ -80,12 +79,63 @@ public class Steering : MonoBehaviour
                 }
                 break;
             case SteeringType.EvadeWithSteering:
-                EvadeWithSteering();
+                steering = EvadeWithSteering();
                 break;
             default:
                 Debug.LogError("Unhandled steering type");
                 break;
         }
+
+        Vector3 velocity = ClampVector(myRigidbody.velocity + steering, maxVelocity);
+
+        // Calculate arrival for these behaviors
+        if (steerType == SteeringType.SeekWithSteering || steerType == SteeringType.PursueWithSteering)
+        {
+            
+        }
+
+        Vector3 myPos = transform.position;
+        // If the target is null, we are wandering, don't need to calc anything
+        Vector3 targetPos = target == null ? Vector3.zero : target.position;
+
+        switch (steerType)
+        {
+            case SteeringType.SeekWithSteering:
+            case SteeringType.PursueWithSteering:
+                /*
+                 * This will just fully stop the agent when it gets close. Fine
+                 * for now, but will need to check to make sure no other
+                 * steering behaviors are running when support for multiple
+                 * at the same time is added, otherwise it will just ignore the
+                 * others and not move.
+                 */
+                float distanceToTarget = Vector3.Distance(myPos, targetPos);
+                if (distanceToTarget < slowDistance)
+                {
+                    velocity = velocity.normalized * maxVelocity * ((distanceToTarget - stopDistance) / (slowDistance - stopDistance));
+                }
+
+                break;
+            case SteeringType.FleeWithSteering:
+            case SteeringType.EvadeWithSteering:
+                /*
+                 * This will just fully stop the agent when it gets away. Fine
+                 * for now, but will need to check to make sure no other
+                 * steering behaviors are running when support for multiple
+                 * at the same time is added, otherwise it will just ignore the
+                 * others and not move.
+                 */
+                if (Vector3.Distance(myPos, targetPos) >= stopDistance)
+                {
+                    velocity = Vector3.zero;  // We are far enough, stop
+                }
+
+                break;
+            default:
+                break;
+        }
+
+        myRigidbody.velocity = velocity;
     }
 
     public void SetSteeringType (SteeringType type, Transform target)
@@ -148,7 +198,7 @@ public class Steering : MonoBehaviour
      * slower. Note that the object does not rotate to face its target, it just
      * changes its velocity to move towards it.
      */
-    void SeekWithSteering()
+    Vector3 SeekWithSteering()
     {
         Vector3 myPos = transform.position;
         Vector3 targetPos = target.position;
@@ -157,7 +207,7 @@ public class Steering : MonoBehaviour
 
         if (Vector3.Distance(myPos, targetPos) <= stopDistance)
         {
-            velocity = Vector3.zero;  // We are close enough, stop
+            return Vector3.zero;  // We are close enough, do not steer
         }
         else
         {
@@ -170,26 +220,9 @@ public class Steering : MonoBehaviour
             steering = desiredVelocity - velocity;
             steering = ClampVector(steering, maxVelocity);
             steering = steering / myRigidbody.mass;
-            velocity = ClampVector(velocity + steering, maxVelocity);
 
-            // Arrival
-            float distanceToTarget = Vector3.Distance(myPos, targetPos);
-            if (distanceToTarget < slowDistance)
-            {
-                velocity = velocity.normalized * maxVelocity * ((distanceToTarget - stopDistance) / (slowDistance - stopDistance));
-            }
+            return steering;
         }
-
-        if (drawDebugLines)
-        {
-            // Draw the desired direction vector
-            Debug.DrawLine(myPos, myPos + (velocity.normalized * debugLineLength), Color.magenta);
-            // Draw the current direction vector
-            Debug.DrawLine(myPos, myPos + (myRigidbody.velocity.normalized * debugLineLength), Color.green);
-
-        }
-
-        myRigidbody.velocity = velocity;
     }
 
     /*
@@ -200,7 +233,7 @@ public class Steering : MonoBehaviour
      * slower. Note that the object does not rotate to face its target, it just
      * changes its velocity to move towards it.
      */
-    void FleeWithSteering()
+    Vector3 FleeWithSteering()
     {
         Vector3 myPos = transform.position;
         Vector3 targetPos = target.position;
@@ -209,7 +242,7 @@ public class Steering : MonoBehaviour
 
         if (Vector3.Distance(myPos, targetPos) >= stopDistance)
         {
-            velocity = Vector3.zero;  // We are far enough, stop
+            return Vector3.zero;  // We are far enough, do not steer
         }
         else
         {
@@ -222,19 +255,8 @@ public class Steering : MonoBehaviour
             steering = desiredVelocity - velocity;
             steering = ClampVector(steering, maxVelocity);
             steering = steering / myRigidbody.mass;
-            velocity = ClampVector(velocity + steering, maxVelocity);
+            return steering;
         }
-
-        if (drawDebugLines)
-        {
-            // Draw the desired direction vector
-            Debug.DrawLine(myPos, myPos + (velocity.normalized * debugLineLength), Color.magenta);
-            // Draw the current direction vector
-            Debug.DrawLine(myPos, myPos + (myRigidbody.velocity.normalized * debugLineLength), Color.green);
-
-        }
-
-        myRigidbody.velocity = velocity;
     }
 
     /*
@@ -243,7 +265,7 @@ public class Steering : MonoBehaviour
      * its direction. This gives the appearance of more realistic wandering
      * as opposed to sudden sharp direction changes.
      */
-    void WanderWithSteering()
+    Vector3 WanderWithSteering()
     {
         Vector3 myPos = transform.position;
         Vector3 velocity = myRigidbody.velocity;
@@ -264,18 +286,7 @@ public class Steering : MonoBehaviour
         steering = wanderForce;
         steering = ClampVector(steering, maxVelocity);
         steering = steering / myRigidbody.mass;
-        velocity = ClampVector(velocity + steering, maxVelocity);
-
-        if (drawDebugLines)
-        {
-            // Draw the desired direction vector
-            Debug.DrawLine(myPos, myPos + (velocity.normalized * debugLineLength), Color.magenta);
-            // Draw the current direction vector
-            Debug.DrawLine(myPos, myPos + (myRigidbody.velocity.normalized * debugLineLength), Color.green);
-
-        }
-
-        myRigidbody.velocity = velocity;
+        return steering;
     }
 
     /*
@@ -287,7 +298,7 @@ public class Steering : MonoBehaviour
      * repredicting. Also uses steering to slowly influence its direction
      * change.
      */
-    void PursueWithSteering()
+    Vector3 PursueWithSteering()
     {
         Vector3 myPos = transform.position;
         Vector3 targetPos = target.position;
@@ -298,13 +309,13 @@ public class Steering : MonoBehaviour
 
         if (Vector3.Distance(myPos, targetPos) <= stopDistance)
         {
-            velocity = Vector3.zero;  // We are close enough, stop
+            return Vector3.zero;  // We are close enough, do not steer
         }
         else
         {
             float distanceBasedPredictAhead = Vector3.Distance(myPos, targetPos) / maxVelocity;
             futureTargetPosition = targetPos + (targetVelocity * distanceBasedPredictAhead);
-            
+
 
             Vector3 desiredVelocity = (futureTargetPosition - myPos).normalized * maxVelocity;
 
@@ -315,27 +326,8 @@ public class Steering : MonoBehaviour
             steering = desiredVelocity - velocity;
             steering = ClampVector(steering, maxVelocity);
             steering = steering / myRigidbody.mass;
-            velocity = ClampVector(velocity + steering, maxVelocity);
-
-            // Arrival
-            float distanceToTarget = Vector3.Distance(myPos, targetPos);
-            if (distanceToTarget < slowDistance)
-            {
-                velocity = velocity.normalized * maxVelocity * ((distanceToTarget - stopDistance) / (slowDistance - stopDistance));
-            }
+            return steering;
         }
-
-        if (drawDebugLines)
-        {
-            // Draw the desired direction vector
-            Debug.DrawLine(myPos, myPos + (velocity.normalized * debugLineLength), Color.magenta);
-            // Draw the current direction vector
-            Debug.DrawLine(myPos, myPos + (myRigidbody.velocity.normalized * debugLineLength), Color.green);
-            // Draw where we predict the target will be
-            Debug.DrawLine(myPos, futureTargetPosition, Color.red);
-        }
-
-        myRigidbody.velocity = velocity;
     }
 
     /*
@@ -347,7 +339,7 @@ public class Steering : MonoBehaviour
      * prediction for some time before repredicting. Also uses steering to
      * slowly influence its direction change.
      */
-    void EvadeWithSteering()
+    Vector3 EvadeWithSteering()
     {
         Vector3 myPos = transform.position;
         Vector3 targetPos = target.position;
@@ -356,9 +348,9 @@ public class Steering : MonoBehaviour
         Vector3 steering;
         Vector3 futureTargetPosition = targetPos;
 
-        if (Vector3.Distance(myPos, targetPos) <= stopDistance)
+        if (Vector3.Distance(myPos, targetPos) >= stopDistance)
         {
-            velocity = Vector3.zero;  // We are close enough, stop
+            return Vector3.zero;  // We are far enough, do not steer
         }
         else
         {
@@ -375,20 +367,8 @@ public class Steering : MonoBehaviour
             steering = desiredVelocity - velocity;
             steering = ClampVector(steering, maxVelocity);
             steering = steering / myRigidbody.mass;
-            velocity = ClampVector(velocity + steering, maxVelocity);
+            return steering;
         }
-
-        if (drawDebugLines)
-        {
-            // Draw the desired direction vector
-            Debug.DrawLine(myPos, myPos + (velocity.normalized * debugLineLength), Color.magenta);
-            // Draw the current direction vector
-            Debug.DrawLine(myPos, myPos + (myRigidbody.velocity.normalized * debugLineLength), Color.green);
-            // Draw where we predict the target will be
-            Debug.DrawLine(myPos, futureTargetPosition, Color.red);
-        }
-
-        myRigidbody.velocity = velocity;
     }
 
     /*
