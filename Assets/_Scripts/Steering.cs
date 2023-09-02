@@ -71,6 +71,13 @@ public class Steering : MonoBehaviour
         else
         {
             velocity = (targetPos - myPos).normalized * maxVelocity;
+
+            // Arrival
+            float distanceToTarget = Vector3.Distance(myPos, targetPos);
+            if (distanceToTarget < slowDistance)
+            {
+                velocity = velocity.normalized * maxVelocity * ((distanceToTarget - stopDistance) / (slowDistance - stopDistance));
+            }
         }
 
         if (drawDebugLines)
@@ -112,6 +119,13 @@ public class Steering : MonoBehaviour
             steering = ClampVector(steering, maxVelocity);
             steering = steering / myRigidbody.mass;
             velocity = ClampVector(velocity + steering, maxVelocity);
+
+            // Arrival
+            float distanceToTarget = Vector3.Distance(myPos, targetPos);
+            if (distanceToTarget < slowDistance)
+            {
+                velocity = velocity.normalized * maxVelocity * ((distanceToTarget - stopDistance) / (slowDistance - stopDistance));
+            }
         }
 
         if (drawDebugLines)
