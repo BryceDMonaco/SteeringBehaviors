@@ -16,8 +16,6 @@ public class Steering : MonoBehaviour
     }
     [SerializeField] private SteeringType steerType = SteeringType.SeekWithSteering;
     [SerializeField] private Transform target;
-    [SerializeField] private Rigidbody targetRigidbody;
-    [SerializeField] private Rigidbody myRigidbody;
     [SerializeField] private float slowDistance = 8f;  // When are this close or closer, start to slow down, must be >= stopDistance
     [SerializeField] private float stopDistance = 5f;  // When we are this close or closer, stop
     [SerializeField] private float wanderCircleRadius = 3f;
@@ -26,16 +24,17 @@ public class Steering : MonoBehaviour
     [SerializeField] private float debugLineLength = 3f;
     [SerializeField] private float wanderAngleChange = 5f;
     [SerializeField] private int pursuitPredictAheadIterationWaits = 10;
-    private int currentPredictWaits = 0;
 
+    private Rigidbody myRigidbody;
+    private Rigidbody targetRigidbody;
+
+    private int currentPredictWaits = 0;
     private float wanderAngle = 0f;
     
     void Start()
     {
-        if (myRigidbody == null)
-        {
-            myRigidbody = GetComponent<Rigidbody>();
-        }
+        myRigidbody = GetComponent<Rigidbody>();
+        targetRigidbody = target?.GetComponent<Rigidbody>();
 
         if (slowDistance < stopDistance)
         {
