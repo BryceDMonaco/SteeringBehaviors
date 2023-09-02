@@ -127,9 +127,10 @@ public class Steering : MonoBehaviour
     }
 
     /**
-     * Seeking with steering behavior. When the target moves, this object will
-     * gradually change its direction over time, in this implementation, a
-     * higher mass for this object's rigidbody will mean it changes direction
+     * Fleeing with steering behavior. If the target comes within stopDistance
+     * of this object, it will flee by gradually changing its direction over
+     * time to go the opposite diretion of the target. In this implementation,
+     * a higher mass for this object's rigidbody will mean it changes direction
      * slower. Note that the object does not rotate to face its target, it just
      * changes its velocity to move towards it.
      */
