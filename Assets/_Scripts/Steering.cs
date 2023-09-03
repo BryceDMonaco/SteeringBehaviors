@@ -1,6 +1,20 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+
+[System.Serializable]
+public class CommandPair
+{
+    public Steering.SteeringBehavior command;
+    public Transform target;
+
+    public CommandPair(Steering.SteeringBehavior command, Transform target)
+    {
+        this.command = command;
+        this.target = target;
+    }
+}
 
 // Implements math described in https://gamedevelopment.tutsplus.com/series/understanding-steering-behaviors--gamedev-12732
 public class Steering : MonoBehaviour
@@ -11,7 +25,8 @@ public class Steering : MonoBehaviour
         Flee,
         Wander,
         Pursue,
-        Evade
+        Evade,
+        CollisionAvoid
     }
     [SerializeField] private SteeringBehavior steeringBehavior = SteeringBehavior.Seek;
     [SerializeField] private Transform target;
@@ -19,10 +34,17 @@ public class Steering : MonoBehaviour
     [SerializeField] private float stopDistance = 5f;  // When we are this close or closer, stop
     [SerializeField] private float wanderCircleRadius = 3f;
     [SerializeField] private float maxVelocity = 5f;
+    [SerializeField] private float maxAvoidanceVelocity = 5f;
     [SerializeField] private bool drawDebugLines = true;
     [SerializeField] private float debugLineLength = 3f;
     [SerializeField] private float wanderAngleChange = 5f;
     [SerializeField] private int pursuitPredictAheadIterationWaits = 10;
+    [SerializeField] private float maxCollisionAvoidanceSeeAheadDistance = 10f;
+    [SerializeField] private float maxCollisionAvoidanceRadiusClose =1.5f;
+    [SerializeField] private float maxCollisionAvoidanceRadiusFar = 5f;
+    [SerializeField] private CommandPair pair = new CommandPair(SteeringBehavior.Flee, null);
+
+    [SerializeField] private float collisionFacingFovDeg = 45f;
 
     private Rigidbody myRigidbody;
     private Rigidbody targetRigidbody;
@@ -50,7 +72,8 @@ public class Steering : MonoBehaviour
         switch (steeringBehavior)
         {
             case SteeringBehavior.Seek:
-                steering = Seek();
+                steering += Seek();
+                steering += CollisionAvoidance();
                 break;
             case SteeringBehavior.Flee:
                 steering = Flee();
@@ -79,59 +102,17 @@ public class Steering : MonoBehaviour
             case SteeringBehavior.Evade:
                 steering = Evade();
                 break;
+            case SteeringBehavior.CollisionAvoid:
+                steering = CollisionAvoidance();
+                break;
             default:
                 Debug.LogError("Unhandled steering type");
                 break;
         }
-
+        steering = ClampVector(steering, maxVelocity);
+        steering = steering / myRigidbody.mass;
         Vector3 velocity = ClampVector(myRigidbody.velocity + steering, maxVelocity);
 
-        // Calculate arrival for these behaviors
-        if (steeringBehavior == SteeringBehavior.Seek || steeringBehavior == SteeringBehavior.Pursue)
-        {
-            
-        }
-
-        Vector3 myPos = transform.position;
-        // If the target is null, we are wandering, don't need to calc anything
-        Vector3 targetPos = target == null ? Vector3.zero : target.position;
-
-        switch (steeringBehavior)
-        {
-            case SteeringBehavior.Seek:
-            case SteeringBehavior.Pursue:
-                /*
-                 * This will just fully stop the agent when it gets close. Fine
-                 * for now, but will need to check to make sure no other
-                 * steering behaviors are running when support for multiple
-                 * at the same time is added, otherwise it will just ignore the
-                 * others and not move.
-                 */
-                float distanceToTarget = Vector3.Distance(myPos, targetPos);
-                if (distanceToTarget < slowDistance)
-                {
-                    velocity = velocity.normalized * maxVelocity * ((distanceToTarget - stopDistance) / (slowDistance - stopDistance));
-                }
-
-                break;
-            case SteeringBehavior.Flee:
-            case SteeringBehavior.Evade:
-                /*
-                 * This will just fully stop the agent when it gets away. Fine
-                 * for now, but will need to check to make sure no other
-                 * steering behaviors are running when support for multiple
-                 * at the same time is added, otherwise it will just ignore the
-                 * others and not move.
-                 */
-                if (Vector3.Distance(myPos, targetPos) >= stopDistance)
-                {
-                    velocity = Vector3.zero;  // We are far enough, stop
-                }
-
-                break;
-            default:
-                break;
-        }
 
         myRigidbody.velocity = velocity;
     }
@@ -216,8 +197,6 @@ public class Steering : MonoBehaviour
              * the math easier to follow.
              */
             steering = desiredVelocity - velocity;
-            steering = ClampVector(steering, maxVelocity);
-            steering = steering / myRigidbody.mass;
 
             return steering;
         }
@@ -369,6 +348,68 @@ public class Steering : MonoBehaviour
         }
     }
 
+    Vector3 CollisionAvoidance()
+    {
+        Vector3 myPos = transform.position;
+        Vector3 velocity = myRigidbody.velocity;
+
+        Vector3 ahead = myPos + (velocity.normalized * maxCollisionAvoidanceSeeAheadDistance);
+
+        List<Collider> hitsFromSphereClose = GetObstaclesWithinRadius(myPos, maxCollisionAvoidanceRadiusClose);
+        List<Collider> hitsFromSphereFar;
+        Transform obstacle = null;
+
+        if (hitsFromSphereClose.Count > 0)
+        {
+            // Deal with closest obstacle first
+            obstacle = hitsFromSphereClose[0].transform;
+        } else if ((hitsFromSphereFar = GetObstaclesWithinRadius(myPos, maxCollisionAvoidanceRadiusFar)).Count > 0)
+        {
+            // If nothing is close, deal with the next obstacle in the far radius
+            obstacle = hitsFromSphereFar[0].transform;
+        } else
+        {
+            // No obstacles within either radius
+            return Vector3.zero;
+        }        
+
+        if (drawDebugLines)
+        {
+            float sphereRadius = hitsFromSphereClose.Count > 0 ? maxCollisionAvoidanceRadiusClose : maxCollisionAvoidanceRadiusFar;
+
+            // Draw the proxy circle
+            Vector3 xAxisStart = new Vector3(myPos.x - sphereRadius, myPos.y, myPos.z);
+            Vector3 xAxisEnd = new Vector3(myPos.x + sphereRadius, myPos.y, myPos.z);
+            Vector3 zAxisStart = new Vector3(myPos.x, myPos.y, myPos.z - sphereRadius);
+            Vector3 zAxisEnd = new Vector3(myPos.x, myPos.y, myPos.z + sphereRadius);
+            Debug.DrawLine(xAxisStart, xAxisEnd, Color.green);
+            Debug.DrawLine(zAxisStart, zAxisEnd, Color.green);
+
+            // Draw line to obstacle
+            Debug.DrawLine(myPos, obstacle.position, Color.magenta);
+            // Draw line showing direction of my velocity
+            Debug.DrawLine(myPos, myPos + velocity.normalized * 3f, Color.blue);
+
+        }
+
+        if (CheckIfFacingTarget(myPos, velocity.normalized, obstacle.position))
+        {
+            // Only avoid the target if we are facing it
+            Vector3 avoidanceForce = myPos - obstacle.position;
+            // Crank up the force if an object is close to avoid getting stuck on it
+            float closeForceMultiplier = hitsFromSphereClose.Count > 0 ? 5f : 1f;
+            avoidanceForce = avoidanceForce.normalized * maxAvoidanceVelocity * closeForceMultiplier;
+
+            return avoidanceForce;
+        } else
+        {
+            // We are not facing the closest obstacle, ignore it
+            return Vector3.zero;
+        }
+
+        
+    }
+
     /*
      * Clamp all values of a vector to +/- maxValue.
      */
@@ -386,5 +427,41 @@ public class Steering : MonoBehaviour
     private float GetNewWanderAngle ()
     {
         return (Random.Range(0f, 1f) * wanderAngleChange) - (wanderAngleChange * 0.5f);
+    }
+
+    /*
+     * Checks if an object is facing a target, facing is considered to be
+     * within +/- collisionFacingFovDeg/2 degrees of the myForwardDirection
+     * direction.
+     */
+    private bool CheckIfFacingTarget (Vector3 myPosition, Vector3 myForwardDirection, Vector3 targetPosition)
+    {
+        Vector3 myForwardDirectionNrm = myForwardDirection.normalized;  // Just to be safe, force normalize it
+        Vector3 directionToTarget = (targetPosition - myPosition).normalized;
+        float dot = Vector3.Dot(myForwardDirectionNrm, directionToTarget);
+
+        /*
+         * Cosine of the fov angle, /2 because we want fov/2 degrees on both
+         * sides of the forwardDirection vector. Converted to radians because
+         * dot product is in radians.
+         */
+        float cosFovAngleRad = Mathf.Cos(collisionFacingFovDeg / 2) * Mathf.Deg2Rad;
+
+        return dot > cosFovAngleRad;
+
+    }
+
+    private List<Collider> GetObstaclesWithinRadius (Vector3 center, float radius)
+    {
+        Collider[] hitsFromSphere = Physics.OverlapSphere(center, radius);
+
+        // Convert the hits to list ordered by distance and containing only obstacles
+        List<Collider> hits = new List<Collider>(hitsFromSphere);
+        hits = hits.OrderBy(hit => Vector3.Distance(center, hit.transform.position)).ToList();
+        List<Collider> obstacleHits = hits = hits.Where(hit => hit.CompareTag("Obstacle")).ToList();
+        Debug.Log("Sphere of radius " + radius + " hit " + hits.Count + ", " + obstacleHits.Count + " were obstacles");
+
+        return obstacleHits;
+
     }
 }
