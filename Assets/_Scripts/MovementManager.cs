@@ -6,11 +6,16 @@ public class MovementManager : MonoBehaviour
 {
     [SerializeField] private List<Steering.CommandPair> commands;
     [SerializeField] private int pursuitPredictAheadIterationWaits = 10;
+    [SerializeField] Transform[] pathPoints;
+    [SerializeField] private float pathFollowPointRadius = 3f;
+    [SerializeField] private bool pathGoBack = true;
 
     private Steering steering;
     private Rigidbody myRigidbody;
     private float maxVelocity;
     private int currentPredictWaits = 0;
+    [SerializeField] private int currentPathPointNdx = 0;
+    private int pathFollowDirection = 1;  // 1 when going, -1 when going back
 
 
 
@@ -60,6 +65,25 @@ public class MovementManager : MonoBehaviour
                     break;
                 case Steering.SteeringBehavior.CollisionAvoid:
                     steeringVector += steering.CollisionAvoidance();
+                    break;
+                case Steering.SteeringBehavior.PathFollow:
+                    if (Vector3.Distance(transform.position, pathPoints[currentPathPointNdx].position) <= pathFollowPointRadius)
+                    {
+                        if (pathGoBack)
+                        {
+                            if ((currentPathPointNdx + 1 == pathPoints.Length && pathFollowDirection == 1) ||
+                                (currentPathPointNdx == 0 && pathFollowDirection == -1))
+                            {
+                                pathFollowDirection *= -1;  // Reverse direction
+                            }
+
+                            currentPathPointNdx += 1 * pathFollowDirection;
+                        } else
+                        {
+                            currentPathPointNdx = (currentPathPointNdx + 1) % pathPoints.Length;
+                        }
+                    }
+                    steeringVector += steering.Seek(pathPoints[currentPathPointNdx]);
                     break;
                 default:
                     Debug.LogError("Unhandled steering type");

@@ -26,7 +26,8 @@ public class Steering : MonoBehaviour
         Wander,
         Pursue,
         Evade,
-        CollisionAvoid
+        CollisionAvoid,
+        PathFollow
     }
     [SerializeField] private float slowDistance = 8f;  // When are this close or closer, start to slow down, must be >= stopDistance
     [SerializeField] private float stopDistance = 5f;  // When we are this close or closer, stop
