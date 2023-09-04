@@ -42,11 +42,12 @@ public class Steering : MonoBehaviour
     [SerializeField] private float maxCollisionAvoidanceSeeAheadDistance = 10f;
     [SerializeField] private float maxCollisionAvoidanceRadiusClose =1.5f;
     [SerializeField] private float maxCollisionAvoidanceRadiusFar = 5f;
+    [SerializeField] private float leaderFollowDistance = 5f;
+    [SerializeField] private float separationDist = 3f;
 
     [SerializeField] private float collisionFacingFovDeg = 45f;
 
     private Rigidbody myRigidbody;
-    private Rigidbody targetRigidbody;
 
     private float wanderAngle = 0f;
     
@@ -132,6 +133,26 @@ public class Steering : MonoBehaviour
     {
         Vector3 myPos = transform.position;
         Vector3 targetPos = target.position;
+        Vector3 velocity = myRigidbody.velocity;
+        Vector3 steering;
+
+        if (Vector3.Distance(myPos, targetPos) <= stopDistance)
+        {
+            return Vector3.zero;  // We are close enough, do not steer
+        }
+        else
+        {
+            Vector3 desiredVelocity = (targetPos - myPos).normalized * maxVelocity;
+
+            steering = desiredVelocity - velocity;
+
+            return steering;
+        }
+    }
+
+    public Vector3 Seek(Vector3 targetPos)
+    {
+        Vector3 myPos = transform.position;
         Vector3 velocity = myRigidbody.velocity;
         Vector3 steering;
 
@@ -258,7 +279,7 @@ public class Steering : MonoBehaviour
         Vector3 myPos = transform.position;
         Vector3 targetPos = target.position;
         Vector3 velocity = myRigidbody.velocity;
-        Vector3 targetVelocity = targetRigidbody.velocity;
+        Vector3 targetVelocity = target.GetComponent<Rigidbody>().velocity;
         Vector3 steering;
         Vector3 futureTargetPosition = targetPos;
 
@@ -367,7 +388,11 @@ public class Steering : MonoBehaviour
 
     public Vector3 LeaderFollow (Transform target)
     {
-        return Vector3.zero;  // Not implemented
+        Vector3 leaderVelocity = target.GetComponent<Rigidbody>().velocity;
+        Vector3 followOffset = (leaderVelocity * -1f).normalized * leaderFollowDistance;
+        Vector3 followPoint = target.position + followOffset;
+
+        return Arrival(followPoint) + Separation();
     }
 
     public Vector3 Arrival (Transform target)
@@ -389,6 +414,56 @@ public class Steering : MonoBehaviour
         myRigidbody.velocity = velocity;
 
         return steering;
+    }
+
+    public Vector3 Arrival (Vector3 targetPos)
+    {
+        Vector3 myPos = transform.position;
+        Vector3 velocity = myRigidbody.velocity;
+        Vector3 steering = Seek(targetPos);
+
+        float distanceToTarget = Vector3.Distance(myPos, targetPos);
+        if (distanceToTarget <= stopDistance)
+        {
+            myRigidbody.velocity = Vector3.zero;  // Not the best way to do this
+            return Vector3.zero;
+        }
+        else if (distanceToTarget < slowDistance)
+        {
+            velocity = velocity.normalized * maxVelocity * ((distanceToTarget - stopDistance) / (slowDistance - stopDistance));
+        }
+        myRigidbody.velocity = velocity;
+
+        return steering;
+    }
+
+    public Vector3 Separation()
+    {
+        Vector3 myPos = transform.position;
+        Vector3 sepForce = Vector3.zero;
+        int nearUnitCount = 0;
+
+        Collider[] farSphereColliders = Physics.OverlapSphere(myPos, maxCollisionAvoidanceRadiusFar);
+        
+        foreach (Collider collider in farSphereColliders)
+        {
+            if (!collider.CompareTag("Unit") && collider.gameObject != gameObject)
+            {
+                continue;  // Skip non-units and this unit
+            }
+
+            sepForce += collider.transform.position - myPos;
+            nearUnitCount++;
+        }
+
+        if (nearUnitCount != 0) 
+        {
+            sepForce = sepForce / nearUnitCount;
+            sepForce *= -1f;
+            sepForce = sepForce.normalized * separationDist;
+        }
+
+        return sepForce;
     }
 
     /*

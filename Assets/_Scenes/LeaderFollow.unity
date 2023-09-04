@@ -396,6 +396,7 @@ MonoBehaviour:
   maxCollisionAvoidanceSeeAheadDistance: 5
   maxCollisionAvoidanceRadiusClose: 1.5
   maxCollisionAvoidanceRadiusFar: 5
+  leaderFollowDistance: 5
   collisionFacingFovDeg: 45
 --- !u!54 &394036649
 Rigidbody:
@@ -493,10 +494,8 @@ MonoBehaviour:
   commands:
   - command: 0
     target: {fileID: 1417031209}
-  - command: 1
-    target: {fileID: 758935860}
-  - command: 5
-    target: {fileID: 0}
+  - command: 6
+    target: {fileID: 1417031209}
   pursuitPredictAheadIterationWaits: 10
   pathPoints: []
   pathFollowPointRadius: 3
@@ -739,7 +738,7 @@ GameObject:
   - component: {fileID: 758935854}
   - component: {fileID: 758935861}
   m_Layer: 0
-  m_Name: Cube_Predator
+  m_Name: Cube_Follower
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -768,6 +767,7 @@ MonoBehaviour:
   maxCollisionAvoidanceSeeAheadDistance: 5
   maxCollisionAvoidanceRadiusClose: 1.5
   maxCollisionAvoidanceRadiusFar: 5
+  leaderFollowDistance: 5
   collisionFacingFovDeg: 45
 --- !u!114 &758935855
 MonoBehaviour:
@@ -782,9 +782,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   commands:
-  - command: 3
+  - command: 8
     target: {fileID: 394036653}
-  - command: 5
+  - command: 6
     target: {fileID: 0}
   pursuitPredictAheadIterationWaits: 10
   pathPoints: []
@@ -1203,6 +1203,7 @@ MonoBehaviour:
   maxCollisionAvoidanceSeeAheadDistance: 10
   maxCollisionAvoidanceRadiusClose: 1.5
   maxCollisionAvoidanceRadiusFar: 5
+  leaderFollowDistance: 5
   collisionFacingFovDeg: 45
 --- !u!114 &963194231
 MonoBehaviour:
@@ -1217,7 +1218,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   commands:
-  - command: 3
+  - command: 4
     target: {fileID: 394036653}
   pursuitPredictAheadIterationWaits: 10
   pathPoints: []
@@ -2113,7 +2114,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1417031205}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 42.55, y: 1, z: 2.09}
+  m_LocalPosition: {x: -12.08, y: 1, z: 9.11}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
