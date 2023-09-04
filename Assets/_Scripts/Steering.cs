@@ -292,6 +292,20 @@ public class Steering : MonoBehaviour
             obstacle = hitsFromSphereFar[0].transform;
         } else
         {
+            if (drawDebugLines)
+            {
+                // Draw the proxy circle
+                Vector3 xAxisStart = new Vector3(myPos.x - maxCollisionAvoidanceRadiusFar, myPos.y, myPos.z);
+                Vector3 xAxisEnd = new Vector3(myPos.x + maxCollisionAvoidanceRadiusFar, myPos.y, myPos.z);
+                Vector3 zAxisStart = new Vector3(myPos.x, myPos.y, myPos.z - maxCollisionAvoidanceRadiusFar);
+                Vector3 zAxisEnd = new Vector3(myPos.x, myPos.y, myPos.z + maxCollisionAvoidanceRadiusFar);
+                Debug.DrawLine(xAxisStart, xAxisEnd, Color.green);
+                Debug.DrawLine(zAxisStart, zAxisEnd, Color.green);
+
+                // Draw line showing direction of my velocity
+                Debug.DrawLine(myPos, myPos + velocity.normalized * 3f, Color.blue);
+            }
+
             // No obstacles within either radius
             return Vector3.zero;
         }        
@@ -309,7 +323,7 @@ public class Steering : MonoBehaviour
             Debug.DrawLine(zAxisStart, zAxisEnd, Color.green);
 
             // Draw line to obstacle
-            Debug.DrawLine(myPos, obstacle.position, Color.magenta);
+            //Debug.DrawLine(myPos, obstacle.position, Color.magenta);
             // Draw line showing direction of my velocity
             Debug.DrawLine(myPos, myPos + velocity.normalized * 3f, Color.blue);
 
@@ -317,6 +331,9 @@ public class Steering : MonoBehaviour
 
         if (CheckIfFacingTarget(myPos, velocity.normalized, obstacle.position))
         {
+            // Draw line to obstacle
+            Debug.DrawLine(myPos, obstacle.position, Color.magenta);
+
             // Only avoid the target if we are facing it
             Vector3 avoidanceForce = myPos - obstacle.position;
             // Crank up the force if an object is close to avoid getting stuck on it
@@ -366,8 +383,7 @@ public class Steering : MonoBehaviour
          * sides of the forwardDirection vector. Converted to radians because
          * dot product is in radians.
          */
-        float cosFovAngleRad = Mathf.Cos(collisionFacingFovDeg / 2) * Mathf.Deg2Rad;
-
+        float cosFovAngleRad = Mathf.Cos((collisionFacingFovDeg / 2) * Mathf.Deg2Rad);
         return dot > cosFovAngleRad;
 
     }
