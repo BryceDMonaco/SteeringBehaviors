@@ -400,10 +400,10 @@ public class Steering : MonoBehaviour
     {
         Collider[] hitsFromSphere = Physics.OverlapSphere(center, radius);
 
-        // Convert the hits to list ordered by distance and containing only obstacles
+        // Convert the hits to list ordered by distance and containing only obstacles, excluding the object itself if it is tagged obstacle
         List<Collider> hits = new List<Collider>(hitsFromSphere);
         hits = hits.OrderBy(hit => Vector3.Distance(center, hit.transform.position)).ToList();
-        List<Collider> obstacleHits = hits = hits.Where(hit => hit.CompareTag("Obstacle")).ToList();
+        List<Collider> obstacleHits = hits = hits.Where(hit => hit.CompareTag("Obstacle")).Where(hit => hit.gameObject != gameObject).ToList();
         Debug.Log("Sphere of radius " + radius + " hit " + hits.Count + ", " + obstacleHits.Count + " were obstacles");
 
         return obstacleHits;
