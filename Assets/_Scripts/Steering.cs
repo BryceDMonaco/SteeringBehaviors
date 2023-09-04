@@ -282,11 +282,19 @@ public class Steering : MonoBehaviour
         List<Collider> hitsFromSphereFar;
         Transform obstacle = null;
 
+        /*
+         * Scale the radius of the far sphere based on velocity to prevent
+         * detecting something far away while direction changing. Do not let
+         * scaled radius be less than the close check radius.
+         */
+        float farSphereRadiusVelocityScaled = maxCollisionAvoidanceRadiusFar * (velocity.magnitude / maxVelocity);
+        farSphereRadiusVelocityScaled = farSphereRadiusVelocityScaled < maxCollisionAvoidanceRadiusClose ? maxCollisionAvoidanceRadiusClose : farSphereRadiusVelocityScaled;
+
         if (hitsFromSphereClose.Count > 0)
         {
             // Deal with closest obstacle first
             obstacle = hitsFromSphereClose[0].transform;
-        } else if ((hitsFromSphereFar = GetObstaclesWithinRadius(myPos, maxCollisionAvoidanceRadiusFar)).Count > 0)
+        } else if ((hitsFromSphereFar = GetObstaclesWithinRadius(myPos, farSphereRadiusVelocityScaled)).Count > 0)
         {
             // If nothing is close, deal with the next obstacle in the far radius
             obstacle = hitsFromSphereFar[0].transform;
@@ -295,10 +303,10 @@ public class Steering : MonoBehaviour
             if (drawDebugLines)
             {
                 // Draw the proxy circle
-                Vector3 xAxisStart = new Vector3(myPos.x - maxCollisionAvoidanceRadiusFar, myPos.y, myPos.z);
-                Vector3 xAxisEnd = new Vector3(myPos.x + maxCollisionAvoidanceRadiusFar, myPos.y, myPos.z);
-                Vector3 zAxisStart = new Vector3(myPos.x, myPos.y, myPos.z - maxCollisionAvoidanceRadiusFar);
-                Vector3 zAxisEnd = new Vector3(myPos.x, myPos.y, myPos.z + maxCollisionAvoidanceRadiusFar);
+                Vector3 xAxisStart = new Vector3(myPos.x - farSphereRadiusVelocityScaled, myPos.y, myPos.z);
+                Vector3 xAxisEnd = new Vector3(myPos.x + farSphereRadiusVelocityScaled, myPos.y, myPos.z);
+                Vector3 zAxisStart = new Vector3(myPos.x, myPos.y, myPos.z - farSphereRadiusVelocityScaled);
+                Vector3 zAxisEnd = new Vector3(myPos.x, myPos.y, myPos.z + farSphereRadiusVelocityScaled);
                 Debug.DrawLine(xAxisStart, xAxisEnd, Color.green);
                 Debug.DrawLine(zAxisStart, zAxisEnd, Color.green);
 
@@ -312,7 +320,7 @@ public class Steering : MonoBehaviour
 
         if (drawDebugLines)
         {
-            float sphereRadius = hitsFromSphereClose.Count > 0 ? maxCollisionAvoidanceRadiusClose : maxCollisionAvoidanceRadiusFar;
+            float sphereRadius = hitsFromSphereClose.Count > 0 ? maxCollisionAvoidanceRadiusClose : farSphereRadiusVelocityScaled;
 
             // Draw the proxy circle
             Vector3 xAxisStart = new Vector3(myPos.x - sphereRadius, myPos.y, myPos.z);
