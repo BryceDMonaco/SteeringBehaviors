@@ -296,7 +296,7 @@ MonoBehaviour:
   maxCollisionAvoidanceRadiusClose: 1.5
   maxCollisionAvoidanceRadiusFar: 5
   leaderFollowDistance: 5
-  separationDist: 3
+  separationDist: 5
   collisionFacingFovDeg: 45
 --- !u!114 &191169534
 MonoBehaviour:
@@ -738,7 +738,7 @@ MonoBehaviour:
   maxCollisionAvoidanceRadiusClose: 1.5
   maxCollisionAvoidanceRadiusFar: 5
   leaderFollowDistance: 5
-  separationDist: 1.5
+  separationDist: 5
   collisionFacingFovDeg: 45
 --- !u!114 &434735245
 MonoBehaviour:
@@ -1016,7 +1016,7 @@ MonoBehaviour:
   maxCollisionAvoidanceRadiusClose: 1.5
   maxCollisionAvoidanceRadiusFar: 5
   leaderFollowDistance: 5
-  separationDist: 1.5
+  separationDist: 5
   collisionFacingFovDeg: 45
 --- !u!114 &662019835
 MonoBehaviour:
@@ -1261,7 +1261,7 @@ MonoBehaviour:
   maxCollisionAvoidanceRadiusClose: 1.5
   maxCollisionAvoidanceRadiusFar: 5
   leaderFollowDistance: 5
-  separationDist: 1.5
+  separationDist: 5
   collisionFacingFovDeg: 45
 --- !u!114 &758935855
 MonoBehaviour:
@@ -2121,7 +2121,7 @@ MonoBehaviour:
   maxCollisionAvoidanceRadiusClose: 1.5
   maxCollisionAvoidanceRadiusFar: 5
   leaderFollowDistance: 5
-  separationDist: 3
+  separationDist: 5
   collisionFacingFovDeg: 45
 --- !u!114 &1260244436
 MonoBehaviour:

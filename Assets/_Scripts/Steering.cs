@@ -43,7 +43,7 @@ public class Steering : MonoBehaviour
     [SerializeField] private float maxCollisionAvoidanceRadiusClose =1.5f;
     [SerializeField] private float maxCollisionAvoidanceRadiusFar = 5f;
     [SerializeField] private float leaderFollowDistance = 5f;
-    [SerializeField] private float separationDist = 3f;
+    [SerializeField] private float separationDist = 5f;
 
     [SerializeField] private float collisionFacingFovDeg = 45f;
 
