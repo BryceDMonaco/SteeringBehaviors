@@ -392,7 +392,7 @@ public class Steering : MonoBehaviour
         Vector3 followOffset = (leaderVelocity * -1f).normalized * leaderFollowDistance;
         Vector3 followPoint = target.position + followOffset;
 
-        return Arrival(followPoint) + Separation();
+        return Arrival(followPoint) + Separation() + Evade(target);
     }
 
     public Vector3 Arrival (Transform target)
