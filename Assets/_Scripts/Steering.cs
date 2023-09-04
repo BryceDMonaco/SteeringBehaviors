@@ -22,12 +22,14 @@ public class Steering : MonoBehaviour
     public enum SteeringBehavior
     {
         Seek,
+        Arrival,
         Flee,
         Wander,
         Pursue,
         Evade,
         CollisionAvoid,
-        PathFollow
+        PathFollow,
+        LeaderFollow
     }
     [SerializeField] private float slowDistance = 8f;  // When are this close or closer, start to slow down, must be >= stopDistance
     [SerializeField] private float stopDistance = 5f;  // When we are this close or closer, stop
@@ -73,6 +75,11 @@ public class Steering : MonoBehaviour
     public float GetStopDistance ()
     {
         return stopDistance;
+    }
+
+    public float GetSlowDistance ()
+    {
+        return slowDistance;
     }
 
     /*
@@ -299,6 +306,7 @@ public class Steering : MonoBehaviour
         {
             // If nothing is close, deal with the next obstacle in the far radius
             obstacle = hitsFromSphereFar[0].transform;
+            return Flee(obstacle);
         } else
         {
             if (drawDebugLines)
@@ -355,6 +363,32 @@ public class Steering : MonoBehaviour
             // We are not facing the closest obstacle, ignore it
             return Vector3.zero;
         }
+    }
+
+    public Vector3 LeaderFollow (Transform target)
+    {
+        return Vector3.zero;  // Not implemented
+    }
+
+    public Vector3 Arrival (Transform target)
+    {
+        Vector3 myPos = transform.position;
+        Vector3 velocity = myRigidbody.velocity;
+        Vector3 steering = Seek(target);
+
+        float distanceToTarget = Vector3.Distance(myPos, target.position);
+        if (distanceToTarget <= stopDistance)
+        {
+            myRigidbody.velocity = Vector3.zero;  // Not the best way to do this
+            return Vector3.zero;
+        }
+        else if (distanceToTarget < slowDistance)
+        {
+            velocity = velocity.normalized * maxVelocity * ((distanceToTarget - stopDistance) / (slowDistance - stopDistance));
+        }
+        myRigidbody.velocity = velocity;
+
+        return steering;
     }
 
     /*

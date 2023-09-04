@@ -34,7 +34,13 @@ public class MovementManager : MonoBehaviour
             switch (command.command)
             {
                 case Steering.SteeringBehavior.Seek:
-                    steeringVector += steering.Seek(command.target);
+                    if (Vector3.Distance(transform.position, command.target.position) < steering.GetSlowDistance())
+                    {
+                        steeringVector += steering.Arrival(command.target);
+                    } else
+                    {
+                        steeringVector += steering.Seek(command.target);
+                    }
                     break;
                 case Steering.SteeringBehavior.Flee:
                     steeringVector += steering.Flee(command.target);
@@ -85,8 +91,11 @@ public class MovementManager : MonoBehaviour
                     }
                     steeringVector += steering.Seek(pathPoints[currentPathPointNdx]);
                     break;
+                case Steering.SteeringBehavior.LeaderFollow:
+                    steeringVector += steering.LeaderFollow(command.target);
+                    break;
                 default:
-                    Debug.LogError("Unhandled steering type");
+                    Debug.LogError("Unhandled steering type in " + gameObject.name + ": " + command.command);
                     break;
             }
 
