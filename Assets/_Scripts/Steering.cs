@@ -3,22 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-[System.Serializable]
-public class CommandPair
-{
-    public Steering.SteeringBehavior command;
-    public Transform target;
-
-    public CommandPair(Steering.SteeringBehavior command, Transform target)
-    {
-        this.command = command;
-        this.target = target;
-    }
-}
-
 // Implements math described in https://gamedevelopment.tutsplus.com/series/understanding-steering-behaviors--gamedev-12732
 public class Steering : MonoBehaviour
 {
+    [System.Serializable]
+    public class CommandPair
+    {
+        public Steering.SteeringBehavior command;
+        public Transform target;
+
+        public CommandPair(Steering.SteeringBehavior command, Transform target)
+        {
+            this.command = command;
+            this.target = target;
+        }
+    }
+
     public enum SteeringBehavior
     {
         Seek,
@@ -28,8 +28,6 @@ public class Steering : MonoBehaviour
         Evade,
         CollisionAvoid
     }
-    [SerializeField] private SteeringBehavior steeringBehavior = SteeringBehavior.Seek;
-    [SerializeField] private Transform target;
     [SerializeField] private float slowDistance = 8f;  // When are this close or closer, start to slow down, must be >= stopDistance
     [SerializeField] private float stopDistance = 5f;  // When we are this close or closer, stop
     [SerializeField] private float wanderCircleRadius = 3f;
@@ -38,24 +36,20 @@ public class Steering : MonoBehaviour
     [SerializeField] private bool drawDebugLines = true;
     [SerializeField] private float debugLineLength = 3f;
     [SerializeField] private float wanderAngleChange = 5f;
-    [SerializeField] private int pursuitPredictAheadIterationWaits = 10;
     [SerializeField] private float maxCollisionAvoidanceSeeAheadDistance = 10f;
     [SerializeField] private float maxCollisionAvoidanceRadiusClose =1.5f;
     [SerializeField] private float maxCollisionAvoidanceRadiusFar = 5f;
-    [SerializeField] private CommandPair pair = new CommandPair(SteeringBehavior.Flee, null);
 
     [SerializeField] private float collisionFacingFovDeg = 45f;
 
     private Rigidbody myRigidbody;
     private Rigidbody targetRigidbody;
 
-    private int currentPredictWaits = 0;
     private float wanderAngle = 0f;
     
     void Start()
     {
         myRigidbody = GetComponent<Rigidbody>();
-        targetRigidbody = target?.GetComponent<Rigidbody>();
 
         if (slowDistance < stopDistance)
         {
@@ -67,65 +61,12 @@ public class Steering : MonoBehaviour
 
     void FixedUpdate()
     {
-        Vector3 steering = Vector3.zero;
-
-        switch (steeringBehavior)
-        {
-            case SteeringBehavior.Seek:
-                steering += Seek();
-                steering += CollisionAvoidance();
-                break;
-            case SteeringBehavior.Flee:
-                steering = Flee();
-                break;
-            case SteeringBehavior.Wander:
-                steering = Wander();
-                break;
-            case SteeringBehavior.Pursue:
-                /*
-                 * If we are constantly predicting the target's position, we
-                 * are just following it. Instead, only predict its position
-                 * every pursuitPredictAheadIterationWaits iterations, which
-                 * is every (pursuitPredictAheadIterationWaits * 
-                 * Time.fixedDeltaTime) seconds
-                 */
-                if (currentPredictWaits >= pursuitPredictAheadIterationWaits)
-                {
-                    currentPredictWaits = 0;
-                    steering = Pursue();
-                }
-                else
-                {
-                    currentPredictWaits++;
-                }
-                break;
-            case SteeringBehavior.Evade:
-                steering = Evade();
-                break;
-            case SteeringBehavior.CollisionAvoid:
-                steering = CollisionAvoidance();
-                break;
-            default:
-                Debug.LogError("Unhandled steering type");
-                break;
-        }
-        steering = ClampVector(steering, maxVelocity);
-        steering = steering / myRigidbody.mass;
-        Vector3 velocity = ClampVector(myRigidbody.velocity + steering, maxVelocity);
-
-
-        myRigidbody.velocity = velocity;
+        // Don't do anything here, a manager should handle it
     }
 
-    public void SetSteeringBehavior (SteeringBehavior type, Transform target)
+    public float GetMaxVelocity ()
     {
-        steeringBehavior = type;
-        this.target = target;
-    }
-
-    public SteeringBehavior GetSteeringBehavior ()
-    {
-        return steeringBehavior;
+        return maxVelocity;
     }
 
     public float GetStopDistance ()
@@ -139,7 +80,7 @@ public class Steering : MonoBehaviour
      * meaning there is no steering. Note that the object does not rotate to
      * face its target, it just changes its velocity to move towards it.
      */
-    void SeekWithoutSteering()
+    Vector3 SeekWithoutSteering(Transform target)
     {
         Vector3 myPos = transform.position;
         Vector3 targetPos = target.position;
@@ -147,18 +88,20 @@ public class Steering : MonoBehaviour
 
         if (Vector3.Distance(myPos, targetPos) <= stopDistance)
         {
-            velocity = Vector3.zero;  // We are close enough, stop
+            return Vector3.zero;  // We are close enough, stop
         }
         else
         {
             velocity = (targetPos - myPos).normalized * maxVelocity;
 
+            /*
             // Arrival
             float distanceToTarget = Vector3.Distance(myPos, targetPos);
             if (distanceToTarget < slowDistance)
             {
                 velocity = velocity.normalized * maxVelocity * ((distanceToTarget - stopDistance) / (slowDistance - stopDistance));
             }
+            */
         }
 
         if (drawDebugLines)
@@ -167,7 +110,7 @@ public class Steering : MonoBehaviour
             Debug.DrawLine(myPos, myPos + (velocity.normalized * debugLineLength), Color.magenta);
         }
 
-        myRigidbody.velocity = velocity;
+        return velocity;
     }
 
     /*
@@ -177,7 +120,7 @@ public class Steering : MonoBehaviour
      * slower. Note that the object does not rotate to face its target, it just
      * changes its velocity to move towards it.
      */
-    Vector3 Seek()
+    public Vector3 Seek(Transform target)
     {
         Vector3 myPos = transform.position;
         Vector3 targetPos = target.position;
@@ -192,10 +135,6 @@ public class Steering : MonoBehaviour
         {
             Vector3 desiredVelocity = (targetPos - myPos).normalized * maxVelocity;
 
-            /*
-             * This could be combined into one line, but breaking it up makes
-             * the math easier to follow.
-             */
             steering = desiredVelocity - velocity;
 
             return steering;
@@ -210,7 +149,7 @@ public class Steering : MonoBehaviour
      * slower. Note that the object does not rotate to face its target, it just
      * changes its velocity to move towards it.
      */
-    Vector3 Flee()
+    public Vector3 Flee(Transform target)
     {
         Vector3 myPos = transform.position;
         Vector3 targetPos = target.position;
@@ -225,13 +164,8 @@ public class Steering : MonoBehaviour
         {
             Vector3 desiredVelocity = (myPos - targetPos).normalized * maxVelocity;
 
-            /*
-             * This could be combined into one line, but breaking it up makes
-             * the math easier to follow.
-             */
             steering = desiredVelocity - velocity;
-            steering = ClampVector(steering, maxVelocity);
-            steering = steering / myRigidbody.mass;
+            
             return steering;
         }
     }
@@ -242,7 +176,7 @@ public class Steering : MonoBehaviour
      * its direction. This gives the appearance of more realistic wandering
      * as opposed to sudden sharp direction changes.
      */
-    Vector3 Wander()
+    public Vector3 Wander()
     {
         Vector3 myPos = transform.position;
         Vector3 velocity = myRigidbody.velocity;
@@ -275,12 +209,12 @@ public class Steering : MonoBehaviour
      * repredicting. Also uses steering to slowly influence its direction
      * change.
      */
-    Vector3 Pursue()
+    public Vector3 Pursue(Transform target)
     {
         Vector3 myPos = transform.position;
         Vector3 targetPos = target.position;
         Vector3 velocity = myRigidbody.velocity;
-        Vector3 targetVelocity = targetRigidbody.velocity;
+        Vector3 targetVelocity = target.GetComponent<Rigidbody>().velocity;
         Vector3 steering;
         Vector3 futureTargetPosition = targetPos;
 
@@ -296,13 +230,8 @@ public class Steering : MonoBehaviour
 
             Vector3 desiredVelocity = (futureTargetPosition - myPos).normalized * maxVelocity;
 
-            /*
-             * This could be combined into one line, but breaking it up makes
-             * the math easier to follow.
-             */
             steering = desiredVelocity - velocity;
-            steering = ClampVector(steering, maxVelocity);
-            steering = steering / myRigidbody.mass;
+
             return steering;
         }
     }
@@ -316,7 +245,7 @@ public class Steering : MonoBehaviour
      * prediction for some time before repredicting. Also uses steering to
      * slowly influence its direction change.
      */
-    Vector3 Evade()
+    public Vector3 Evade(Transform target)
     {
         Vector3 myPos = transform.position;
         Vector3 targetPos = target.position;
@@ -337,18 +266,12 @@ public class Steering : MonoBehaviour
 
             Vector3 desiredVelocity = (myPos - futureTargetPosition).normalized * maxVelocity;
 
-            /*
-             * This could be combined into one line, but breaking it up makes
-             * the math easier to follow.
-             */
             steering = desiredVelocity - velocity;
-            steering = ClampVector(steering, maxVelocity);
-            steering = steering / myRigidbody.mass;
             return steering;
         }
     }
 
-    Vector3 CollisionAvoidance()
+    public Vector3 CollisionAvoidance()
     {
         Vector3 myPos = transform.position;
         Vector3 velocity = myRigidbody.velocity;
@@ -406,14 +329,12 @@ public class Steering : MonoBehaviour
             // We are not facing the closest obstacle, ignore it
             return Vector3.zero;
         }
-
-        
     }
 
     /*
      * Clamp all values of a vector to +/- maxValue.
      */
-    Vector3 ClampVector(Vector3 vector, float maxValue)
+    public Vector3 ClampVector(Vector3 vector, float maxValue)
     {
         return new Vector3(
             Mathf.Clamp(vector.x, -maxValue, maxValue),
