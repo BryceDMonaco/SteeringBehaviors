@@ -136,6 +136,7 @@ GameObject:
   - component: {fileID: 394036651}
   - component: {fileID: 394036650}
   - component: {fileID: 394036649}
+  - component: {fileID: 394036654}
   - component: {fileID: 394036648}
   m_Layer: 0
   m_Name: Cube
@@ -156,16 +157,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8cb910b1bf204d2d907c2b51abca438, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  steerType: 3
-  target: {fileID: 0}
-  myRigidbody: {fileID: 394036649}
   slowDistance: 8
   stopDistance: 5
   wanderCircleRadius: 5
   maxVelocity: 5
+  maxAvoidanceVelocity: 5
   drawDebugLines: 1
   debugLineLength: 3
   wanderAngleChange: 30
+  wanderMultiplier: 1
+  maxCollisionAvoidanceSeeAheadDistance: 10
+  maxCollisionAvoidanceRadiusClose: 1.5
+  maxCollisionAvoidanceRadiusFar: 5
+  leaderFollowDistance: 5
+  separationDist: 5
+  collisionFacingFovDeg: 45
 --- !u!54 &394036649
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -260,6 +266,27 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &394036654
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 394036647}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5b9cb0719d519547960fc4e8a1bfada, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  commands:
+  - command: 3
+    target: {fileID: 0}
+  pursuitPredictAheadIterationWaits: 10
+  pathPoints: []
+  pathFollowPointRadius: 3
+  pathGoBack: 1
+  lookTowardsVelocity: 1
+  currentPathPointNdx: 0
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -443,8 +470,9 @@ GameObject:
   - component: {fileID: 963194228}
   - component: {fileID: 963194227}
   - component: {fileID: 963194226}
-  - component: {fileID: 963194230}
   - component: {fileID: 963194229}
+  - component: {fileID: 963194231}
+  - component: {fileID: 963194230}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -546,13 +574,39 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8cb910b1bf204d2d907c2b51abca438, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  steerType: 1
-  target: {fileID: 394036653}
-  myRigidbody: {fileID: 963194229}
-  slowDistance: 3
-  stopDistance: 0
+  slowDistance: 8
+  stopDistance: 5
   wanderCircleRadius: 3
-  maxVelocity: 50
+  maxVelocity: 20
+  maxAvoidanceVelocity: 5
   drawDebugLines: 1
   debugLineLength: 3
   wanderAngleChange: 5
+  wanderMultiplier: 1
+  maxCollisionAvoidanceSeeAheadDistance: 10
+  maxCollisionAvoidanceRadiusClose: 1.5
+  maxCollisionAvoidanceRadiusFar: 5
+  leaderFollowDistance: 5
+  separationDist: 5
+  collisionFacingFovDeg: 45
+--- !u!114 &963194231
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 963194225}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5b9cb0719d519547960fc4e8a1bfada, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  commands:
+  - command: 0
+    target: {fileID: 394036653}
+  pursuitPredictAheadIterationWaits: 10
+  pathPoints: []
+  pathFollowPointRadius: 3
+  pathGoBack: 1
+  lookTowardsVelocity: 0
+  currentPathPointNdx: 0

@@ -31,6 +31,7 @@ public class Steering : MonoBehaviour
         PathFollow,
         LeaderFollow
     }
+
     [SerializeField] private float slowDistance = 8f;  // When are this close or closer, start to slow down, must be >= stopDistance
     [SerializeField] private float stopDistance = 5f;  // When we are this close or closer, stop
     [SerializeField] private float wanderCircleRadius = 3f;
@@ -39,6 +40,7 @@ public class Steering : MonoBehaviour
     [SerializeField] private bool drawDebugLines = true;
     [SerializeField] private float debugLineLength = 3f;
     [SerializeField] private float wanderAngleChange = 5f;
+    [SerializeField] private float wanderMultiplier = 5f;
     [SerializeField] private float maxCollisionAvoidanceSeeAheadDistance = 10f;
     [SerializeField] private float maxCollisionAvoidanceRadiusClose =1.5f;
     [SerializeField] private float maxCollisionAvoidanceRadiusFar = 5f;
@@ -61,11 +63,6 @@ public class Steering : MonoBehaviour
         }
 
         wanderAngle += GetNewWanderAngle();
-    }
-
-    void FixedUpdate()
-    {
-        // Don't do anything here, a manager should handle it
     }
 
     public float GetMaxVelocity ()
@@ -217,6 +214,7 @@ public class Steering : MonoBehaviour
         Vector3 wanderDisplacement = new Vector3(0, 0, -1) * wanderCircleRadius;
         wanderDisplacement = Quaternion.AngleAxis(wanderAngle, Vector3.up) * wanderDisplacement;
         Vector3 wanderForce = wanderCircleCenter + wanderDisplacement;
+        wanderForce *= wanderMultiplier;
 
 
         /*
@@ -226,6 +224,7 @@ public class Steering : MonoBehaviour
         steering = wanderForce;
         steering = ClampVector(steering, maxVelocity);
         steering = steering / myRigidbody.mass;
+        Debug.DrawLine(myPos, myPos + (wanderForce.normalized * 5f), Color.blue);
         return steering;
     }
 

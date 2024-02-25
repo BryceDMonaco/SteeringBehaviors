@@ -2,6 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/**
+ *  Handles the movement for a single gameobject.
+ */
 public class MovementManager : MonoBehaviour
 {
     [SerializeField] private List<Steering.CommandPair> commands;
@@ -9,6 +12,7 @@ public class MovementManager : MonoBehaviour
     [SerializeField] Transform[] pathPoints;
     [SerializeField] private float pathFollowPointRadius = 3f;
     [SerializeField] private bool pathGoBack = true;
+    [SerializeField] private bool lookTowardsVelocity = true;
 
     private Steering steering;
     private Rigidbody myRigidbody;
@@ -104,6 +108,16 @@ public class MovementManager : MonoBehaviour
             Vector3 velocity = steering.ClampVector(myRigidbody.velocity + steeringVector, maxVelocity);
 
             myRigidbody.velocity = velocity;
+
+            if (lookTowardsVelocity)
+            {
+                LookTowardsVelocity(velocity);
+            }
         }
+    }
+
+    void LookTowardsVelocity (Vector3 velocity)
+    {
+        transform.rotation = Quaternion.LookRotation(velocity.normalized);
     }
 }
