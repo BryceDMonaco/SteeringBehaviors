@@ -150,6 +150,13 @@ public class MovementManager : MonoBehaviour
 
     void LookTowardsVelocity (Vector3 velocity)
     {
-        transform.rotation = Quaternion.LookRotation(velocity.normalized);
+        /* 
+         * If velocity is zero, this gameobject will just stay at the direction
+         * it was last traveling to
+         */
+        if (velocity.magnitude != 0f)
+        {
+            transform.rotation = Quaternion.LookRotation(velocity.normalized);
+        }
     }
 }
