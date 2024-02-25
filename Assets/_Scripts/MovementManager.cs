@@ -5,6 +5,7 @@ using UnityEngine;
 /**
  *  Handles the movement for a single gameobject.
  */
+[RequireComponent(typeof(Steering))]
 public class MovementManager : MonoBehaviour
 {
     [SerializeField] private List<Steering.CommandPair> commands;
