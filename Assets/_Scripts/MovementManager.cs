@@ -8,11 +8,21 @@ using UnityEngine;
 [RequireComponent(typeof(Steering))]
 public class MovementManager : MonoBehaviour
 {
+    public enum PathFollowEndBehavior
+    {
+        LoopFromStart,
+        ReverseOrderToStart,
+        Stop
+    }
+    
     [SerializeField] private List<Steering.CommandPair> commands;
+    [Header("Pursuit Settings")]
     [SerializeField] private int pursuitPredictAheadIterationWaits = 10;
+    [Header("Path Follow Settings")]
     [SerializeField] Transform[] pathPoints;
     [SerializeField] private float pathFollowPointRadius = 3f;
-    [SerializeField] private bool pathGoBack = true;
+    [SerializeField] private PathFollowEndBehavior pathGoBackBehavior = PathFollowEndBehavior.ReverseOrderToStart;
+    [Header("Other Settings")]
     [SerializeField] private bool lookTowardsVelocity = true;
 
     private Steering steering;
@@ -78,23 +88,44 @@ public class MovementManager : MonoBehaviour
                     steeringVector += steering.CollisionAvoidance();
                     break;
                 case Steering.SteeringBehavior.PathFollow:
+                    bool stopAtLast = false;
+
                     if (Vector3.Distance(transform.position, pathPoints[currentPathPointNdx].position) <= pathFollowPointRadius)
                     {
-                        if (pathGoBack)
+                        if (pathGoBackBehavior == PathFollowEndBehavior.LoopFromStart)
+                        {
+                            currentPathPointNdx = (currentPathPointNdx + 1) % pathPoints.Length;
+                        }
+                        if (pathGoBackBehavior == PathFollowEndBehavior.ReverseOrderToStart)
                         {
                             if ((currentPathPointNdx + 1 == pathPoints.Length && pathFollowDirection == 1) ||
                                 (currentPathPointNdx == 0 && pathFollowDirection == -1))
                             {
-                                pathFollowDirection *= -1;  // Reverse direction
+                                // Reverse direction
+                                pathFollowDirection *= -1;
                             }
 
                             currentPathPointNdx += 1 * pathFollowDirection;
-                        } else
+                        } else if (pathGoBackBehavior == PathFollowEndBehavior.Stop)
                         {
-                            currentPathPointNdx = (currentPathPointNdx + 1) % pathPoints.Length;
+                            if (currentPathPointNdx < pathPoints.Length - 1)
+                            {
+                                currentPathPointNdx++;
+                            } else
+                            {
+                                currentPathPointNdx = pathPoints.Length - 1;
+                                stopAtLast = true;
+                            }
                         }
                     }
-                    steeringVector += steering.Seek(pathPoints[currentPathPointNdx]);
+
+                    if (stopAtLast)
+                    {
+                        steeringVector += steering.Arrival(pathPoints[currentPathPointNdx]);
+                    } else
+                    {
+                        steeringVector += steering.Seek(pathPoints[currentPathPointNdx]);
+                    }
                     break;
                 case Steering.SteeringBehavior.LeaderFollow:
                     steeringVector += steering.LeaderFollow(command.target);

@@ -676,18 +676,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8cb910b1bf204d2d907c2b51abca438, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxVelocity: 5
   slowDistance: 8
   stopDistance: 5
-  wanderCircleRadius: 5
-  maxVelocity: 5
+  leaderFollowDistance: 5
+  separationDist: 5
   maxAvoidanceVelocity: 5
-  drawDebugLines: 1
-  debugLineLength: 3
-  wanderAngleChange: 30
   maxCollisionAvoidanceSeeAheadDistance: 5
   maxCollisionAvoidanceRadiusClose: 1.5
   maxCollisionAvoidanceRadiusFar: 5
   collisionFacingFovDeg: 45
+  wanderAngleChange: 30
+  wanderMultiplier: 5
+  wanderCircleRadius: 5
+  drawDebugLines: 1
+  debugLineLength: 3
 --- !u!54 &394036649
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -782,6 +785,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   commands:
+  - command: 7
+    target: {fileID: 0}
   - command: 6
     target: {fileID: 0}
   pursuitPredictAheadIterationWaits: 10
@@ -793,7 +798,8 @@ MonoBehaviour:
   - {fileID: 1785808590}
   - {fileID: 95959729}
   pathFollowPointRadius: 3
-  pathGoBack: 1
+  pathGoBackBehavior: 2
+  lookTowardsVelocity: 1
   currentPathPointNdx: 0
 --- !u!135 &394036655
 SphereCollider:
@@ -1050,18 +1056,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8cb910b1bf204d2d907c2b51abca438, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxVelocity: 5
   slowDistance: 8
   stopDistance: 5
-  wanderCircleRadius: 5
-  maxVelocity: 5
+  leaderFollowDistance: 5
+  separationDist: 5
   maxAvoidanceVelocity: 3
-  drawDebugLines: 1
-  debugLineLength: 3
-  wanderAngleChange: 30
   maxCollisionAvoidanceSeeAheadDistance: 5
   maxCollisionAvoidanceRadiusClose: 1.5
   maxCollisionAvoidanceRadiusFar: 5
   collisionFacingFovDeg: 45
+  wanderAngleChange: 30
+  wanderMultiplier: 5
+  wanderCircleRadius: 5
+  drawDebugLines: 1
+  debugLineLength: 3
 --- !u!114 &758935855
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1082,7 +1091,8 @@ MonoBehaviour:
   pursuitPredictAheadIterationWaits: 10
   pathPoints: []
   pathFollowPointRadius: 3
-  pathGoBack: 1
+  pathGoBackBehavior: 1
+  lookTowardsVelocity: 1
   currentPathPointNdx: 0
 --- !u!54 &758935856
 Rigidbody:
@@ -1582,18 +1592,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8cb910b1bf204d2d907c2b51abca438, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxVelocity: 10
   slowDistance: 3
   stopDistance: 0
-  wanderCircleRadius: 3
-  maxVelocity: 10
+  leaderFollowDistance: 5
+  separationDist: 5
   maxAvoidanceVelocity: 5
-  drawDebugLines: 0
-  debugLineLength: 3
-  wanderAngleChange: 5
   maxCollisionAvoidanceSeeAheadDistance: 10
   maxCollisionAvoidanceRadiusClose: 1.5
   maxCollisionAvoidanceRadiusFar: 5
   collisionFacingFovDeg: 45
+  wanderAngleChange: 5
+  wanderMultiplier: 5
+  wanderCircleRadius: 3
+  drawDebugLines: 0
+  debugLineLength: 3
 --- !u!114 &963194231
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1607,12 +1620,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   commands:
-  - command: 3
+  - command: 4
     target: {fileID: 394036653}
   pursuitPredictAheadIterationWaits: 10
   pathPoints: []
   pathFollowPointRadius: 3
-  pathGoBack: 1
+  pathGoBackBehavior: 1
+  lookTowardsVelocity: 0
   currentPathPointNdx: 0
 --- !u!1 &1154548984
 GameObject:
