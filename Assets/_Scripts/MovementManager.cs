@@ -1,14 +1,17 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class MovementManager : MonoBehaviour
 {
     [SerializeField] private List<Steering.CommandPair> commands;
     [SerializeField] private int pursuitPredictAheadIterationWaits = 10;
-    [SerializeField] Transform[] pathPoints;
+    [SerializeField] private bool pathFollowNavAgent = false;
+    [SerializeField] List<Transform> pathPoints = new List<Transform>();
     [SerializeField] private float pathFollowPointRadius = 3f;
-    [SerializeField] private bool pathGoBack = true;
+    [SerializeField] private Steering.PathFollowBehavior pathFollowBehavior = Steering.PathFollowBehavior.FollowBack;
+    [SerializeField] private GameObject waypointObj;
 
     private Steering steering;
     private Rigidbody myRigidbody;
@@ -16,14 +19,19 @@ public class MovementManager : MonoBehaviour
     private int currentPredictWaits = 0;
     [SerializeField] private int currentPathPointNdx = 0;
     private int pathFollowDirection = 1;  // 1 when going, -1 when going back
-
-
+    private NavMeshAgent agent;
+    private Vector3 lastPathFollowTargetPosition = Vector3.zero;
 
     void Start()
     {
         steering = GetComponent<Steering>();
         myRigidbody = GetComponent<Rigidbody>();
         maxVelocity = steering.GetMaxVelocity();
+
+        if (pathFollowNavAgent)
+        {
+            agent = GetComponent<NavMeshAgent>();
+        }
     }
 
     void FixedUpdate()
@@ -73,20 +81,42 @@ public class MovementManager : MonoBehaviour
                     steeringVector += steering.CollisionAvoidance();
                     break;
                 case Steering.SteeringBehavior.PathFollow:
+                    if (pathFollowNavAgent && (pathPoints.Count == 0 || lastPathFollowTargetPosition != command.target.position))
+                    {
+                        GenerateNewPath(command.target);
+                    }
+
+                    if (pathPoints.Count == 0)
+                    {
+                        Debug.Log("No path");
+                        continue;
+                    }
+
                     if (Vector3.Distance(transform.position, pathPoints[currentPathPointNdx].position) <= pathFollowPointRadius)
                     {
-                        if (pathGoBack)
+                        switch (pathFollowBehavior)
                         {
-                            if ((currentPathPointNdx + 1 == pathPoints.Length && pathFollowDirection == 1) ||
+                            case Steering.PathFollowBehavior.FollowBack:
+                                if ((currentPathPointNdx + 1 == pathPoints.Count && pathFollowDirection == 1) ||
                                 (currentPathPointNdx == 0 && pathFollowDirection == -1))
-                            {
-                                pathFollowDirection *= -1;  // Reverse direction
-                            }
+                                {
+                                    pathFollowDirection *= -1;  // Reverse direction
+                                }
 
-                            currentPathPointNdx += 1 * pathFollowDirection;
-                        } else
-                        {
-                            currentPathPointNdx = (currentPathPointNdx + 1) % pathPoints.Length;
+                                currentPathPointNdx += 1 * pathFollowDirection;
+                                break;
+                            case Steering.PathFollowBehavior.ReturnToStart:
+                                currentPathPointNdx = (currentPathPointNdx + 1) % pathPoints.Count;
+                                break;
+                            case Steering.PathFollowBehavior.StopAtEnd:
+                                if (currentPathPointNdx != pathPoints.Count - 1)
+                                {
+                                    currentPathPointNdx++;
+                                }
+                                break;
+                            default:
+                                Debug.Log("Unhandled PathFollowBehavior " + pathFollowBehavior);
+                                break;
                         }
                     }
                     steeringVector += steering.Seek(pathPoints[currentPathPointNdx]);
@@ -105,5 +135,30 @@ public class MovementManager : MonoBehaviour
 
             myRigidbody.velocity = velocity;
         }
+    }
+
+    void GenerateNewPath (Transform target)
+    {
+        // Clear last path
+        foreach (Transform waypoint in pathPoints)
+        {
+            Destroy(waypoint.gameObject);
+        }
+
+        pathPoints.Clear();
+
+        lastPathFollowTargetPosition = target.position;
+        NavMeshPath generatedPath = new NavMeshPath();
+        bool success = agent.CalculatePath(target.position, generatedPath);
+
+        Debug.Log("Path found=" + success + " Path size=" + generatedPath.corners.Length + " Status=" + generatedPath.status);
+
+        foreach (Vector3 corner in generatedPath.corners)
+        {
+            GameObject waypoint = Instantiate(waypointObj, corner, Quaternion.identity);
+            pathPoints.Add(waypoint.transform);
+        }
+
+        currentPathPointNdx = 0;
     }
 }

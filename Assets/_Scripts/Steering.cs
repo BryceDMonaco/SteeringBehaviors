@@ -31,6 +31,14 @@ public class Steering : MonoBehaviour
         PathFollow,
         LeaderFollow
     }
+
+    public enum PathFollowBehavior
+    {
+        FollowBack,     // Agent goes from point 1 to x, then reverses order and goes x to 1
+        ReturnToStart,  // Agent goes from point 1 to x, then immediately back to 1, then repeats
+        StopAtEnd       // Agent goes from point 1 to x, stops at x
+    }
+
     [SerializeField] private float slowDistance = 8f;  // When are this close or closer, start to slow down, must be >= stopDistance
     [SerializeField] private float stopDistance = 5f;  // When we are this close or closer, stop
     [SerializeField] private float wanderCircleRadius = 3f;
