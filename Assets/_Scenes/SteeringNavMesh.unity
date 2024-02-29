@@ -420,20 +420,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8cb910b1bf204d2d907c2b51abca438, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxVelocity: 5
   slowDistance: 8
   stopDistance: 5
-  wanderCircleRadius: 5
-  maxVelocity: 5
+  leaderFollowDistance: 5
+  separationDist: 5
   maxAvoidanceVelocity: 5
-  drawDebugLines: 1
-  debugLineLength: 3
-  wanderAngleChange: 30
   maxCollisionAvoidanceSeeAheadDistance: 5
   maxCollisionAvoidanceRadiusClose: 1.5
   maxCollisionAvoidanceRadiusFar: 5
-  leaderFollowDistance: 5
-  separationDist: 5
   collisionFacingFovDeg: 45
+  wanderAngleChange: 30
+  wanderMultiplier: 5
+  wanderCircleRadius: 5
+  drawDebugLines: 1
+  debugLineLength: 3
 --- !u!54 &394036649
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -536,6 +537,7 @@ MonoBehaviour:
   pathFollowPointRadius: 3
   pathFollowBehavior: 2
   waypointObj: {fileID: 938930943029459622, guid: 37d03cca7b7304ad39847d402e5ddf18, type: 3}
+  lookTowardsVelocity: 1
   currentPathPointNdx: 0
 --- !u!135 &394036655
 SphereCollider:
@@ -831,20 +833,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8cb910b1bf204d2d907c2b51abca438, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxVelocity: 5
   slowDistance: 8
   stopDistance: 5
-  wanderCircleRadius: 5
-  maxVelocity: 5
+  leaderFollowDistance: 5
+  separationDist: 5
   maxAvoidanceVelocity: 3
-  drawDebugLines: 1
-  debugLineLength: 3
-  wanderAngleChange: 30
   maxCollisionAvoidanceSeeAheadDistance: 5
   maxCollisionAvoidanceRadiusClose: 1.5
   maxCollisionAvoidanceRadiusFar: 5
-  leaderFollowDistance: 5
-  separationDist: 5
   collisionFacingFovDeg: 45
+  wanderAngleChange: 30
+  wanderMultiplier: 5
+  wanderCircleRadius: 5
+  drawDebugLines: 1
+  debugLineLength: 3
 --- !u!114 &758935855
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -868,6 +871,7 @@ MonoBehaviour:
   pathFollowPointRadius: 3
   pathFollowBehavior: 0
   waypointObj: {fileID: 0}
+  lookTowardsVelocity: 1
   currentPathPointNdx: 0
 --- !u!54 &758935856
 Rigidbody:
@@ -1287,20 +1291,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8cb910b1bf204d2d907c2b51abca438, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxVelocity: 10
   slowDistance: 3
   stopDistance: 0
-  wanderCircleRadius: 3
-  maxVelocity: 10
+  leaderFollowDistance: 5
+  separationDist: 5
   maxAvoidanceVelocity: 5
-  drawDebugLines: 0
-  debugLineLength: 3
-  wanderAngleChange: 5
   maxCollisionAvoidanceSeeAheadDistance: 10
   maxCollisionAvoidanceRadiusClose: 1.5
   maxCollisionAvoidanceRadiusFar: 5
-  leaderFollowDistance: 5
-  separationDist: 5
   collisionFacingFovDeg: 45
+  wanderAngleChange: 5
+  wanderMultiplier: 5
+  wanderCircleRadius: 3
+  drawDebugLines: 0
+  debugLineLength: 3
 --- !u!114 &963194231
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1322,6 +1327,7 @@ MonoBehaviour:
   pathFollowPointRadius: 3
   pathFollowBehavior: 0
   waypointObj: {fileID: 0}
+  lookTowardsVelocity: 0
   currentPathPointNdx: 0
 --- !u!1 &1154548984
 GameObject:

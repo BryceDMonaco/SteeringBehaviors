@@ -195,29 +195,4 @@ public class MovementManager : MonoBehaviour
 
         currentPathPointNdx = 0;
     }
-
-    void GenerateNewPath (Transform target)
-    {
-        // Clear last path
-        foreach (Transform waypoint in pathPoints)
-        {
-            Destroy(waypoint.gameObject);
-        }
-
-        pathPoints.Clear();
-
-        lastPathFollowTargetPosition = target.position;
-        NavMeshPath generatedPath = new NavMeshPath();
-        bool success = agent.CalculatePath(target.position, generatedPath);
-
-        Debug.Log("Path found=" + success + " Path size=" + generatedPath.corners.Length + " Status=" + generatedPath.status);
-
-        foreach (Vector3 corner in generatedPath.corners)
-        {
-            GameObject waypoint = Instantiate(waypointObj, corner, Quaternion.identity);
-            pathPoints.Add(waypoint.transform);
-        }
-
-        currentPathPointNdx = 0;
-    }
 }
