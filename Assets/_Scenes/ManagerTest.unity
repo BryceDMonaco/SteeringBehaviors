@@ -396,6 +396,8 @@ MonoBehaviour:
   maxCollisionAvoidanceSeeAheadDistance: 5
   maxCollisionAvoidanceRadiusClose: 1.5
   maxCollisionAvoidanceRadiusFar: 5
+  leaderFollowDistance: 5
+  separationDist: 5
   collisionFacingFovDeg: 45
 --- !u!54 &394036649
 Rigidbody:
@@ -494,10 +496,14 @@ MonoBehaviour:
   - command: 0
     target: {fileID: 1417031209}
   - command: 1
-    target: {fileID: 758935860}
-  - command: 5
     target: {fileID: 0}
+  - command: 5
+    target: {fileID: 758935860}
   pursuitPredictAheadIterationWaits: 10
+  pathPoints: []
+  pathFollowPointRadius: 3
+  pathGoBack: 1
+  currentPathPointNdx: 0
 --- !u!135 &394036655
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -764,6 +770,8 @@ MonoBehaviour:
   maxCollisionAvoidanceSeeAheadDistance: 5
   maxCollisionAvoidanceRadiusClose: 1.5
   maxCollisionAvoidanceRadiusFar: 5
+  leaderFollowDistance: 5
+  separationDist: 5
   collisionFacingFovDeg: 45
 --- !u!114 &758935855
 MonoBehaviour:
@@ -779,10 +787,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   commands:
   - command: 3
-    target: {fileID: 394036653}
-  - command: 5
     target: {fileID: 0}
   pursuitPredictAheadIterationWaits: 10
+  pathPoints: []
+  pathFollowPointRadius: 3
+  pathGoBack: 1
+  currentPathPointNdx: 0
 --- !u!54 &758935856
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1195,6 +1205,8 @@ MonoBehaviour:
   maxCollisionAvoidanceSeeAheadDistance: 10
   maxCollisionAvoidanceRadiusClose: 1.5
   maxCollisionAvoidanceRadiusFar: 5
+  leaderFollowDistance: 5
+  separationDist: 5
   collisionFacingFovDeg: 45
 --- !u!114 &963194231
 MonoBehaviour:
@@ -1212,6 +1224,10 @@ MonoBehaviour:
   - command: 3
     target: {fileID: 394036653}
   pursuitPredictAheadIterationWaits: 10
+  pathPoints: []
+  pathFollowPointRadius: 3
+  pathGoBack: 1
+  currentPathPointNdx: 0
 --- !u!1 &1154548984
 GameObject:
   m_ObjectHideFlags: 0

@@ -3,15 +3,31 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
+/**
+ *  Handles the movement for a single gameobject.
+ */
+[RequireComponent(typeof(Steering))]
 public class MovementManager : MonoBehaviour
 {
+    public enum PathFollowEndBehavior
+    {
+        LoopFromStart,
+        ReverseOrderToStart,
+        Stop
+    }
+    
     [SerializeField] private List<Steering.CommandPair> commands;
+    [Header("Pursuit Settings")]
     [SerializeField] private int pursuitPredictAheadIterationWaits = 10;
+    [Header("Path Follow Settings")]
     [SerializeField] private bool pathFollowNavAgent = false;
     [SerializeField] List<Transform> pathPoints = new List<Transform>();
     [SerializeField] private float pathFollowPointRadius = 3f;
     [SerializeField] private Steering.PathFollowBehavior pathFollowBehavior = Steering.PathFollowBehavior.FollowBack;
     [SerializeField] private GameObject waypointObj;
+
+    [Header("Other Settings")]
+    [SerializeField] private bool lookTowardsVelocity = true;
 
     private Steering steering;
     private Rigidbody myRigidbody;
@@ -100,7 +116,8 @@ public class MovementManager : MonoBehaviour
                                 if ((currentPathPointNdx + 1 == pathPoints.Count && pathFollowDirection == 1) ||
                                 (currentPathPointNdx == 0 && pathFollowDirection == -1))
                                 {
-                                    pathFollowDirection *= -1;  // Reverse direction
+                                    // Reverse direction
+                                    pathFollowDirection *= -1;
                                 }
 
                                 currentPathPointNdx += 1 * pathFollowDirection;
@@ -134,7 +151,49 @@ public class MovementManager : MonoBehaviour
             Vector3 velocity = steering.ClampVector(myRigidbody.velocity + steeringVector, maxVelocity);
 
             myRigidbody.velocity = velocity;
+
+            if (lookTowardsVelocity)
+            {
+                LookTowardsVelocity(velocity);
+            }
         }
+    }
+
+    void LookTowardsVelocity (Vector3 velocity)
+    {
+        /* 
+         * If velocity is zero, this gameobject will just stay at the direction
+         * it was last traveling to
+         */
+        if (velocity.magnitude != 0f)
+        {
+            transform.rotation = Quaternion.LookRotation(velocity.normalized);
+        }
+    }
+
+    void GenerateNewPath (Transform target)
+    {
+        // Clear last path
+        foreach (Transform waypoint in pathPoints)
+        {
+            Destroy(waypoint.gameObject);
+        }
+
+        pathPoints.Clear();
+
+        lastPathFollowTargetPosition = target.position;
+        NavMeshPath generatedPath = new NavMeshPath();
+        bool success = agent.CalculatePath(target.position, generatedPath);
+
+        Debug.Log("Path found=" + success + " Path size=" + generatedPath.corners.Length + " Status=" + generatedPath.status);
+
+        foreach (Vector3 corner in generatedPath.corners)
+        {
+            GameObject waypoint = Instantiate(waypointObj, corner, Quaternion.identity);
+            pathPoints.Add(waypoint.transform);
+        }
+
+        currentPathPointNdx = 0;
     }
 
     void GenerateNewPath (Transform target)
