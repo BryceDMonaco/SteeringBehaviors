@@ -32,6 +32,13 @@ public class Steering : MonoBehaviour
         LeaderFollow
     }
 
+    public enum PathFollowBehavior
+    {
+        FollowBack,     // Agent goes from point 1 to x, then reverses order and goes x to 1
+        ReturnToStart,  // Agent goes from point 1 to x, then immediately back to 1, then repeats
+        StopAtEnd       // Agent goes from point 1 to x, stops at x
+    }
+
     [SerializeField] private float maxVelocity = 5f;
 
     [Header("Seek and Arrival Settings")]
