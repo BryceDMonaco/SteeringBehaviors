@@ -9,13 +9,6 @@ using UnityEngine.AI;
 [RequireComponent(typeof(Steering))]
 public class MovementManager : MonoBehaviour
 {
-    public enum PathFollowEndBehavior
-    {
-        LoopFromStart,
-        ReverseOrderToStart,
-        Stop
-    }
-    
     [SerializeField] private List<Steering.CommandPair> commands;
     [Header("Pursuit Settings")]
     [SerializeField] private int pursuitPredictAheadIterationWaits = 10;
