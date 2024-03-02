@@ -108,6 +108,8 @@ public class MovementManager : MonoBehaviour
                         continue;
                     }
 
+                    bool stopAtLast = false;
+
                     if (Vector3.Distance(transform.position, pathPoints[currentPathPointNdx].position) <= pathFollowPointRadius)
                     {
                         switch (pathFollowBehavior)
@@ -129,6 +131,9 @@ public class MovementManager : MonoBehaviour
                                 if (currentPathPointNdx != pathPoints.Count - 1)
                                 {
                                     currentPathPointNdx++;
+                                } else
+                                {
+                                    stopAtLast = true;
                                 }
                                 break;
                             default:
@@ -136,7 +141,9 @@ public class MovementManager : MonoBehaviour
                                 break;
                         }
                     }
-                    steeringVector += steering.Seek(pathPoints[currentPathPointNdx]);
+
+                    steeringVector += (stopAtLast) ? steering.Arrival(pathPoints[currentPathPointNdx]) :
+                        steering.Seek(pathPoints[currentPathPointNdx]);
                     break;
                 case Steering.SteeringBehavior.LeaderFollow:
                     steeringVector += steering.LeaderFollow(command.target);
