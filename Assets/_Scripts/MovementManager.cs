@@ -21,6 +21,7 @@ public class MovementManager : MonoBehaviour
 
     [Header("Other Settings")]
     [SerializeField] private bool lookTowardsVelocity = true;
+    [SerializeField] private float minMagnitude = .5f;
 
     private Steering steering;
     private Rigidbody myRigidbody;
@@ -146,9 +147,9 @@ public class MovementManager : MonoBehaviour
                     break;
             }
 
-            steeringVector = steering.ClampVector(steeringVector, maxVelocity);
+            steeringVector = Steering.ClampVector(steeringVector, maxVelocity);
             steeringVector = steeringVector / myRigidbody.mass;
-            Vector3 velocity = steering.ClampVector(myRigidbody.velocity + steeringVector, maxVelocity);
+            Vector3 velocity = Steering.ClampVector(myRigidbody.velocity + steeringVector, maxVelocity, minMagnitude);
 
             myRigidbody.velocity = velocity;
 

@@ -484,12 +484,24 @@ public class Steering : MonoBehaviour
     /*
      * Clamp all values of a vector to +/- maxValue.
      */
-    public Vector3 ClampVector(Vector3 vector, float maxValue)
+    public static Vector3 ClampVector(Vector3 vector, float maxValue)
     {
-        return new Vector3(
+        return ClampVector(vector, maxValue, 0f);
+    }
+
+    /*
+     * Clamp all values of a vector to +/- maxValue. If the magnitude is less
+     * than minMagnitude, return a zero vector
+     */
+    public static Vector3 ClampVector(Vector3 vector, float maxValue, float minMagnitude)
+    {
+        Vector3 clampedVector = new Vector3(
             Mathf.Clamp(vector.x, -maxValue, maxValue),
             Mathf.Clamp(vector.y, -maxValue, maxValue),
             Mathf.Clamp(vector.z, -maxValue, maxValue));
+
+        return (clampedVector.magnitude < minMagnitude) ? Vector3.zero :
+            clampedVector;
     }
 
     /*

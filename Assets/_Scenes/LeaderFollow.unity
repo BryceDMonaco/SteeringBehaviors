@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657838, g: 0.49641234, b: 0.57481676, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -317,10 +317,13 @@ MonoBehaviour:
   - command: 6
     target: {fileID: 0}
   pursuitPredictAheadIterationWaits: 10
+  pathFollowNavAgent: 0
   pathPoints: []
   pathFollowPointRadius: 3
-  pathGoBack: 1
+  pathFollowBehavior: 0
+  waypointObj: {fileID: 0}
   lookTowardsVelocity: 1
+  minMagnitude: 0.5
   currentPathPointNdx: 0
 --- !u!54 &191169535
 Rigidbody:
@@ -665,10 +668,13 @@ MonoBehaviour:
   - command: 6
     target: {fileID: 1417031209}
   pursuitPredictAheadIterationWaits: 10
+  pathFollowNavAgent: 0
   pathPoints: []
   pathFollowPointRadius: 3
-  pathGoBack: 1
+  pathFollowBehavior: 0
+  waypointObj: {fileID: 0}
   lookTowardsVelocity: 1
+  minMagnitude: 0.1
   currentPathPointNdx: 0
 --- !u!135 &394036655
 SphereCollider:
@@ -763,10 +769,13 @@ MonoBehaviour:
   - command: 6
     target: {fileID: 0}
   pursuitPredictAheadIterationWaits: 10
+  pathFollowNavAgent: 0
   pathPoints: []
   pathFollowPointRadius: 3
-  pathGoBack: 1
+  pathFollowBehavior: 0
+  waypointObj: {fileID: 0}
   lookTowardsVelocity: 1
+  minMagnitude: 0.5
   currentPathPointNdx: 0
 --- !u!54 &434735246
 Rigidbody:
@@ -1043,10 +1052,13 @@ MonoBehaviour:
   - command: 6
     target: {fileID: 0}
   pursuitPredictAheadIterationWaits: 10
+  pathFollowNavAgent: 0
   pathPoints: []
   pathFollowPointRadius: 3
-  pathGoBack: 1
+  pathFollowBehavior: 0
+  waypointObj: {fileID: 0}
   lookTowardsVelocity: 1
+  minMagnitude: 0.5
   currentPathPointNdx: 0
 --- !u!54 &662019836
 Rigidbody:
@@ -1290,10 +1302,13 @@ MonoBehaviour:
   - command: 6
     target: {fileID: 0}
   pursuitPredictAheadIterationWaits: 10
+  pathFollowNavAgent: 0
   pathPoints: []
   pathFollowPointRadius: 3
-  pathGoBack: 1
+  pathFollowBehavior: 0
+  waypointObj: {fileID: 0}
   lookTowardsVelocity: 1
+  minMagnitude: 0.5
   currentPathPointNdx: 0
 --- !u!54 &758935856
 Rigidbody:
@@ -1727,10 +1742,13 @@ MonoBehaviour:
   - command: 4
     target: {fileID: 394036653}
   pursuitPredictAheadIterationWaits: 10
+  pathFollowNavAgent: 0
   pathPoints: []
   pathFollowPointRadius: 3
-  pathGoBack: 1
+  pathFollowBehavior: 0
+  waypointObj: {fileID: 0}
   lookTowardsVelocity: 0
+  minMagnitude: 0.1
   currentPathPointNdx: 0
 --- !u!1 &1154548984
 GameObject:
@@ -2154,10 +2172,13 @@ MonoBehaviour:
   - command: 6
     target: {fileID: 0}
   pursuitPredictAheadIterationWaits: 10
+  pathFollowNavAgent: 0
   pathPoints: []
   pathFollowPointRadius: 3
-  pathGoBack: 1
+  pathFollowBehavior: 0
+  waypointObj: {fileID: 0}
   lookTowardsVelocity: 1
+  minMagnitude: 0.5
   currentPathPointNdx: 0
 --- !u!54 &1260244437
 Rigidbody:
