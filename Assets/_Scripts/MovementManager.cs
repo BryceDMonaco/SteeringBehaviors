@@ -27,7 +27,7 @@ public class MovementManager : MonoBehaviour
     private Rigidbody myRigidbody;
     private float maxVelocity;
     private int currentPredictWaits = 0;
-    [SerializeField] private int currentPathPointNdx = 0;
+    private int currentPathPointNdx = 0;
     private int pathFollowDirection = 1;  // 1 when going, -1 when going back
     private NavMeshAgent agent;
     private Vector3 lastPathFollowTargetPosition = Vector3.zero;
@@ -147,16 +147,21 @@ public class MovementManager : MonoBehaviour
                     break;
             }
 
-            steeringVector = Steering.ClampVector(steeringVector, maxVelocity);
-            steeringVector = steeringVector / myRigidbody.mass;
-            Vector3 velocity = Steering.ClampVector(myRigidbody.velocity + steeringVector, maxVelocity, minMagnitude);
+            ApplySteering(steeringVector);
+        }
+    }
 
-            myRigidbody.velocity = velocity;
+    void ApplySteering (Vector3 steeringVector)
+    {
+        steeringVector = Steering.ClampVector(steeringVector, maxVelocity);
+        steeringVector = steeringVector / myRigidbody.mass;
+        Vector3 velocity = Steering.ClampVector(myRigidbody.velocity + steeringVector, maxVelocity, minMagnitude);
 
-            if (lookTowardsVelocity)
-            {
-                LookTowardsVelocity(velocity);
-            }
+        myRigidbody.velocity = velocity;
+
+        if (lookTowardsVelocity)
+        {
+            LookTowardsVelocity(velocity);
         }
     }
 
