@@ -62,6 +62,7 @@ public class MovementManager : MonoBehaviour
                     break;
                 case Steering.SteeringBehavior.Flee:
                     steeringVector += steering.Flee(command.target);
+                    Debug.Log("Flee Vector = " + steeringVector);
                     break;
                 case Steering.SteeringBehavior.Wander:
                     steeringVector += steering.Wander();
@@ -153,10 +154,11 @@ public class MovementManager : MonoBehaviour
 
     void ApplySteering (Vector3 steeringVector)
     {
+        Debug.Log(gameObject.name + " applying steering with vector: " + steeringVector);
         steeringVector = Steering.ClampVector(steeringVector, maxVelocity);
         steeringVector = steeringVector / myRigidbody.mass;
         Vector3 velocity = Steering.ClampVector(myRigidbody.velocity + steeringVector, maxVelocity, minMagnitude);
-
+        Debug.Log(gameObject.name + " applying final steering with vector: " + velocity + "(mag: " + velocity.magnitude + ")");
         myRigidbody.velocity = velocity;
 
         if (lookTowardsVelocity)

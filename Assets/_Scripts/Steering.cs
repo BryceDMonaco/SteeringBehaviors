@@ -200,6 +200,18 @@ public class Steering : MonoBehaviour
         Vector3 velocity = myRigidbody.velocity;
         Vector3 steering;
 
+        /**
+         * TODO this has issues because there is no slowing once the object has
+         * gotten far away enough. Now that the steering velocity is added to
+         * the previous velocity, we need to figure out a way to get it to slow
+         * and then stop when far away enough. 
+         * 
+         * This is easy to do in the scenario where an object is only has the
+         * command to flee, but what do we do when the object has other commands
+         * that we do not want to override?
+         * 
+         * See issue #2
+         */
         if (Vector3.Distance(myPos, targetPos) >= stopDistance)
         {
             return Vector3.zero;  // We are far enough, do not steer
