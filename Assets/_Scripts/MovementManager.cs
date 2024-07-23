@@ -52,13 +52,8 @@ public class MovementManager : MonoBehaviour
             switch (command.command)
             {
                 case Steering.SteeringBehavior.Seek:
-                    if (Vector3.Distance(transform.position, command.target.position) < steering.GetSlowDistance())
-                    {
-                        steeringVector += steering.Arrival(command.target);
-                    } else
-                    {
-                        steeringVector += steering.Seek(command.target);
-                    }
+                    // Arrival already handles seek and checking distances
+                    steeringVector += steering.Arrival(command.target);
                     break;
                 case Steering.SteeringBehavior.Flee:
                     steeringVector += steering.Flee(command.target);
@@ -137,6 +132,10 @@ public class MovementManager : MonoBehaviour
                         }
                     }
 
+                    /**
+                     * Must use Seek for all but last point otherwise this
+                     * object will stop at the first point in the path
+                     */
                     steeringVector += (stopAtLast) ? steering.Arrival(pathPoints[currentPathPointNdx]) :
                         steering.Seek(pathPoints[currentPathPointNdx]);
                     break;

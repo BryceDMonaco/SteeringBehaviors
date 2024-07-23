@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.44657838, g: 0.49641234, b: 0.57481676, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657838, g: 0.49641228, b: 0.57481676, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -137,6 +137,7 @@ GameObject:
   - component: {fileID: 394036650}
   - component: {fileID: 394036649}
   - component: {fileID: 394036648}
+  - component: {fileID: 394036654}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -156,11 +157,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8cb910b1bf204d2d907c2b51abca438, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  seekType: 1
-  target: {fileID: 1719861204}
-  myRigidbody: {fileID: 394036649}
-  stopDistance: 5
   maxVelocity: 5
+  slowDistance: 8
+  stopDistance: 5
+  leaderFollowDistance: 5
+  separationDist: 5
+  maxAvoidanceVelocity: 5
+  maxCollisionAvoidanceSeeAheadDistance: 10
+  maxCollisionAvoidanceRadiusClose: 1.5
+  maxCollisionAvoidanceRadiusFar: 5
+  collisionFacingFovDeg: 45
+  wanderAngleChange: 5
+  wanderMultiplier: 5
+  wanderCircleRadius: 3
   drawDebugLines: 1
   debugLineLength: 3
 --- !u!54 &394036649
@@ -257,6 +266,29 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &394036654
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 394036647}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5b9cb0719d519547960fc4e8a1bfada, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  commands:
+  - command: 0
+    target: {fileID: 1719861204}
+  pursuitPredictAheadIterationWaits: 10
+  pathFollowNavAgent: 0
+  pathPoints: []
+  pathFollowPointRadius: 3
+  pathFollowBehavior: 0
+  waypointObj: {fileID: 0}
+  lookTowardsVelocity: 1
+  minMagnitude: 0.5
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0

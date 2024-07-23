@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.44657838, g: 0.49641234, b: 0.57481676, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657838, g: 0.49641228, b: 0.57481676, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -421,8 +421,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxVelocity: 5
-  slowDistance: 8
-  stopDistance: 5
+  slowDistance: 3
+  stopDistance: 1
   leaderFollowDistance: 5
   separationDist: 5
   maxAvoidanceVelocity: 5
@@ -538,7 +538,7 @@ MonoBehaviour:
   pathFollowBehavior: 2
   waypointObj: {fileID: 938930943029459622, guid: 37d03cca7b7304ad39847d402e5ddf18, type: 3}
   lookTowardsVelocity: 1
-  currentPathPointNdx: 0
+  minMagnitude: 0.5
 --- !u!135 &394036655
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -872,7 +872,7 @@ MonoBehaviour:
   pathFollowBehavior: 0
   waypointObj: {fileID: 0}
   lookTowardsVelocity: 1
-  currentPathPointNdx: 0
+  minMagnitude: 0.5
 --- !u!54 &758935856
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1328,7 +1328,7 @@ MonoBehaviour:
   pathFollowBehavior: 0
   waypointObj: {fileID: 0}
   lookTowardsVelocity: 0
-  currentPathPointNdx: 0
+  minMagnitude: 0.5
 --- !u!1 &1154548984
 GameObject:
   m_ObjectHideFlags: 0
